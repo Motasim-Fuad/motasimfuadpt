@@ -35,12 +35,13 @@ class PortfolioApp extends StatelessWidget {
       title: 'Motasim Fuad',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      routes: {
-        '/login':     (_) => const LoginScreen(),
-        '/portfolio': (_) => const PortfolioScreen(),
-        '/dashboard': (_) => const DashboardGuard(), // DashboardScreen না, Guard দাও
-      },
-      home: const PortfolioScreen(), // default page
+      initialRoute: '/',          // এটা add করো
+      getPages: [                 // routes এর বদলে getPages দাও
+        GetPage(name: '/', page: () => const PortfolioScreen()),
+        GetPage(name: '/portfolio', page: () => const PortfolioScreen()),
+        GetPage(name: '/login', page: () => const LoginScreen()),
+        GetPage(name: '/dashboard', page: () => const DashboardGuard()),
+      ],
     );
   }
 }
