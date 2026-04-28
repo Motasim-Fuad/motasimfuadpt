@@ -80,24 +80,31 @@ class FirebaseService {
   }
 
   // ─── BLOGS ──────────────────────────────────
-// ─── BLOGS ──────────────────────────────────
+
   Stream<List<BlogModel>> streamBlogs({bool publishedOnly = true}) {
-    Query query = _db
-        .collection('blogs')
-        .orderBy('publishedAt', descending: true);
+    try {
+      Query query = _db.collection('blogs');
 
-    if (publishedOnly) {
-      query = query.where('published', isEqualTo: true);
+      // প্রথমে published filter প্রয়োগ করুন
+      if (publishedOnly) {
+        query = query.where('published', isEqualTo: true);
+      }
+
+      // তারপর orderBy দিন
+      query = query.orderBy('publishedAt', descending: true);
+
+      return query.snapshots().map((s) {
+        final blogs = s.docs.map(BlogModel.fromFirestore).toList();
+        print('✅ Blogs fetched: ${blogs.length} blogs');
+        return blogs;
+      }).handleError((error) {
+        print('❌ Blogs stream error: $error');
+        return <BlogModel>[];
+      });
+    } catch (e) {
+      print('❌ Blogs stream exception: $e');
+      return Stream.value([]);
     }
-
-    return query.snapshots().map((s) {
-      final blogs = s.docs.map(BlogModel.fromFirestore).toList();
-      print('Blogs stream: ${blogs.length} blogs found, publishedOnly=$publishedOnly'); // Debug
-      return blogs;
-    }).handleError((error) {
-      print('Blogs stream error: $error');
-      return <BlogModel>[];
-    });
   }
 
   Future<void> addBlog(BlogModel blog) async {

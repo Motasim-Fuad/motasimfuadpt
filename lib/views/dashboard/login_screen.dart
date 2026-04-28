@@ -19,7 +19,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passCtrl = TextEditingController();
   bool _obscure = true;
 
-  final _auth = AuthController.to;
+  // Safe way to get AuthController
+  AuthController get _auth {
+    try {
+      return Get.find<AuthController>();
+    } catch (e) {
+      // যদি না পাওয়া যায়, তাহলে নতুন করে রেজিস্টার করুন
+      Get.put(AuthController(), permanent: true);
+      return Get.find<AuthController>();
+    }
+  }
 
   @override
   void dispose() {

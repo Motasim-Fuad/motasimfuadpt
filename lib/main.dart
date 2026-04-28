@@ -23,7 +23,6 @@ void main() async {
   if (kIsWeb) {
     FirebaseFirestore.instance.settings = const Settings(
       persistenceEnabled: false,
-      // cacheSizeBytes বাদ দিচ্ছি - ডিফল্ট মান ব্যবহার করবে
     );
   }
 
@@ -39,7 +38,7 @@ class PortfolioApp extends StatelessWidget {
       title: 'Motasim Fuad — Flutter Developer',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      initialBinding: AppBinding(),
+      initialBinding: AppBinding(), // ← এইটা সব controller রেজিস্টার করে
       initialRoute: '/',
       getPages: [
         GetPage(name: '/', page: () => const PortfolioScreen()),
