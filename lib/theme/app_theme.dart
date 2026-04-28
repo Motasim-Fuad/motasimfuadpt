@@ -2,26 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  // Background
   static const Color bg = Color(0xFF080C14);
   static const Color surface = Color(0xFF0F1624);
   static const Color card = Color(0xFF161E2E);
   static const Color cardHover = Color(0xFF1C2740);
   static const Color border = Color(0xFF1F2D45);
-
-  // Accent
   static const Color cyan = Color(0xFF00D4FF);
   static const Color cyanDim = Color(0x3300D4FF);
   static const Color purple = Color(0xFF7B61FF);
   static const Color purpleDim = Color(0x337B61FF);
   static const Color green = Color(0xFF00F5A0);
-
-  // Text
   static const Color textPrimary = Color(0xFFFFFFFF);
   static const Color textSecondary = Color(0xFF8892A4);
   static const Color textMuted = Color(0xFF4A5568);
 
-  // Gradient
   static const LinearGradient heroGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -167,28 +161,5 @@ class AppTheme {
         ),
       ),
     );
-  }
-}
-
-// Responsive helper
-class Responsive {
-  static bool isMobile(BuildContext context) =>
-      MediaQuery.of(context).size.width < 768;
-  static bool isTablet(BuildContext context) =>
-      MediaQuery.of(context).size.width >= 768 &&
-          MediaQuery.of(context).size.width < 1200;
-  static bool isDesktop(BuildContext context) =>
-      MediaQuery.of(context).size.width >= 1200;
-
-  static double maxWidth(BuildContext context) {
-    double w = MediaQuery.of(context).size.width;
-    if (w > 1400) return 1400;
-    return w;
-  }
-
-  static int projectGridCols(BuildContext context) {
-    if (isDesktop(context)) return 3;
-    if (isTablet(context)) return 2;
-    return 1;
   }
 }

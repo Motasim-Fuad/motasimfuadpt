@@ -1,11 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'model.dart';
+import 'package:flutter/foundation.dart';
+import '../models/model.dart';
 
 class FirebaseService {
   static final FirebaseService _instance = FirebaseService._internal();
   factory FirebaseService() => _instance;
-  FirebaseService._internal();
+
+  FirebaseService._internal() {
+    if (kIsWeb) {
+      // Web-এ persistence বন্ধ - শুধু এটুকুই যথেষ্ট
+      FirebaseFirestore.instance.settings = const Settings(
+        persistenceEnabled: false,
+      );
+    }
+  }
 
   final _db = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
@@ -21,10 +30,7 @@ class FirebaseService {
   }
 
   Future<void> signOut() => _auth.signOut();
-
   User? get currentUser => _auth.currentUser;
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
-
   bool get isAdmin => _auth.currentUser != null;
 
   // ─── PROJECTS ───────────────────────────────
@@ -75,11 +81,15 @@ class FirebaseService {
 
   // ─── BLOGS ──────────────────────────────────
   Stream<List<BlogModel>> streamBlogs({bool publishedOnly = true}) {
-    Query query = _db.collection('blogs').orderBy('publishedAt', descending: true);
+    Query query = _db
+        .collection('blogs')
+        .orderBy('publishedAt', descending: true);
     if (publishedOnly) {
       query = query.where('published', isEqualTo: true);
     }
-    return query.snapshots().map((s) => s.docs.map(BlogModel.fromFirestore).toList());
+    return query
+        .snapshots()
+        .map((s) => s.docs.map(BlogModel.fromFirestore).toList());
   }
 
   Future<void> addBlog(BlogModel blog) async {

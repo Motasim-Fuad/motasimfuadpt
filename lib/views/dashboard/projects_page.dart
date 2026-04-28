@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_portfolio/controllers/project_controller.dart';
+import 'package:flutter_portfolio/models/model.dart';
+import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'app_theme.dart';
-import 'firebase_services.dart';
-import 'model.dart';
 
 
 class ProjectsPage extends StatelessWidget {
@@ -38,30 +38,29 @@ class ProjectsPage extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           Expanded(
-            child: StreamBuilder<List<ProjectModel>>(
-              stream: FirebaseService().streamProjects(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                      child: CircularProgressIndicator(color: AppColors.cyan));
-                }
-                final projects = snapshot.data ?? [];
-                if (projects.isEmpty) {
-                  return _EmptyProjectsState(
-                      onAdd: () => _showProjectDialog(context));
-                }
-                return ListView.separated(
-                  itemCount: projects.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (_, i) => _ProjectTile(
-                    project: projects[i],
-                    index: i,
-                    onEdit: () => _showProjectDialog(context, project: projects[i]),
-                    onDelete: () => _confirmDelete(context, projects[i]),
-                  ),
-                );
-              },
-            ),
+            child: Obx(() {
+              if (ProjectController.to.isLoading.value) {
+                return const Center(
+                    child:
+                    CircularProgressIndicator(color: AppColors.cyan));
+              }
+              final projects = ProjectController.to.projects;
+              if (projects.isEmpty) {
+                return _EmptyProjectsState(
+                    onAdd: () => _showProjectDialog(context));
+              }
+              return ListView.separated(
+                itemCount: projects.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (_, i) => _ProjectTile(
+                  project: projects[i],
+                  index: i,
+                  onEdit: () =>
+                      _showProjectDialog(context, project: projects[i]),
+                  onDelete: () => _confirmDelete(context, projects[i]),
+                ),
+              );
+            }),
           ),
         ],
       ),
@@ -71,32 +70,30 @@ class ProjectsPage extends StatelessWidget {
   void _showProjectDialog(BuildContext context, {ProjectModel? project}) {
     showDialog(
       context: context,
-      builder: (_) => _ProjectDialog(project: project),
+      builder: (dialogContext) => _ProjectDialog(project: project),
     );
   }
 
   void _confirmDelete(BuildContext context, ProjectModel project) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Delete Project',
-            style: Theme.of(context).textTheme.headlineMedium),
+        title: Text('Delete Project', style: Theme.of(dialogContext).textTheme.headlineMedium),
         content: Text(
             'Are you sure you want to delete "${project.title}"? This cannot be undone.',
-            style: Theme.of(context).textTheme.bodyMedium),
+            style: Theme.of(dialogContext).textTheme.bodyMedium),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel',
-                style: TextStyle(color: AppColors.textSecondary)),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
-              await FirebaseService().deleteProject(project.id);
-              Navigator.pop(context);
+              await ProjectController.to.delete(project.id);
+              Navigator.pop(dialogContext);
             },
             child: const Text('Delete', style: TextStyle(color: Colors.white)),
           ),
@@ -130,7 +127,6 @@ class _ProjectTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Thumbnail placeholder
           Container(
             width: 60,
             height: 60,
@@ -138,7 +134,17 @@ class _ProjectTile extends StatelessWidget {
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.phone_android_rounded,
+            child: project.imageUrl.isNotEmpty
+                ? ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(project.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const Icon(
+                      Icons.phone_android_rounded,
+                      color: AppColors.textMuted,
+                      size: 24)),
+            )
+                : const Icon(Icons.phone_android_rounded,
                 color: AppColors.textMuted, size: 24),
           ),
           const SizedBox(width: 16),
@@ -148,12 +154,15 @@ class _ProjectTile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      project.title,
-                      style: GoogleFonts.spaceGrotesk(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
+                    Flexible(
+                      child: Text(
+                        project.title,
+                        style: GoogleFonts.spaceGrotesk(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (project.featured) ...[
@@ -235,6 +244,9 @@ class _ProjectTile extends StatelessWidget {
   }
 }
 
+// ──────────────────────────────────────────────
+// PROJECT DIALOG
+// ──────────────────────────────────────────────
 class _ProjectDialog extends StatefulWidget {
   final ProjectModel? project;
   const _ProjectDialog({this.project});
@@ -245,20 +257,34 @@ class _ProjectDialog extends StatefulWidget {
 
 class _ProjectDialogState extends State<_ProjectDialog> {
   final _formKey = GlobalKey<FormState>();
-  late final _titleCtrl = TextEditingController(text: widget.project?.title);
+  late final _titleCtrl =
+  TextEditingController(text: widget.project?.title);
   late final _descCtrl =
   TextEditingController(text: widget.project?.description);
-  late final _imgCtrl = TextEditingController(text: widget.project?.imageUrl);
+  late final _imgCtrl =
+  TextEditingController(text: widget.project?.imageUrl);
   late final _techCtrl = TextEditingController(
       text: widget.project?.technologies.join(', '));
-  late final _ghCtrl = TextEditingController(text: widget.project?.githubUrl);
-  late final _liveCtrl = TextEditingController(text: widget.project?.liveUrl);
+  late final _ghCtrl =
+  TextEditingController(text: widget.project?.githubUrl);
+  late final _liveCtrl =
+  TextEditingController(text: widget.project?.liveUrl);
+  late final _orderCtrl = TextEditingController(
+      text: (widget.project?.order ?? 0).toString());
   late bool _featured = widget.project?.featured ?? false;
   bool _loading = false;
 
   @override
   void dispose() {
-    for (final c in [_titleCtrl, _descCtrl, _imgCtrl, _techCtrl, _ghCtrl, _liveCtrl]) {
+    for (final c in [
+      _titleCtrl,
+      _descCtrl,
+      _imgCtrl,
+      _techCtrl,
+      _ghCtrl,
+      _liveCtrl,
+      _orderCtrl
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -283,14 +309,14 @@ class _ProjectDialogState extends State<_ProjectDialog> {
       githubUrl: _ghCtrl.text.trim(),
       liveUrl: _liveCtrl.text.trim(),
       featured: _featured,
-      order: widget.project?.order ?? 0,
+      order: int.tryParse(_orderCtrl.text) ?? 0,
       createdAt: widget.project?.createdAt ?? DateTime.now(),
     );
 
     if (widget.project != null) {
-      await FirebaseService().updateProject(project);
+      await ProjectController.to.updateProject(project);
     } else {
-      await FirebaseService().addProject(project);
+      await ProjectController.to.add(project);
     }
 
     setState(() => _loading = false);
@@ -301,12 +327,12 @@ class _ProjectDialogState extends State<_ProjectDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.card,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape:
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 560, maxHeight: 680),
+        constraints: const BoxConstraints(maxWidth: 560, maxHeight: 700),
         child: Column(
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.all(24),
               child: Row(
@@ -325,8 +351,6 @@ class _ProjectDialogState extends State<_ProjectDialog> {
               ),
             ),
             const Divider(color: AppColors.border, height: 1),
-
-            // Form
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
@@ -351,16 +375,22 @@ class _ProjectDialogState extends State<_ProjectDialog> {
                         ],
                       ),
                       const SizedBox(height: 16),
+                      _field('Display Order', _orderCtrl,
+                          hint: '0 = first',
+                          keyboardType: TextInputType.number),
+                      const SizedBox(height: 16),
                       Row(
                         children: [
                           Switch(
                             value: _featured,
-                            onChanged: (v) => setState(() => _featured = v),
+                            onChanged: (v) =>
+                                setState(() => _featured = v),
                             activeColor: AppColors.cyan,
                           ),
                           const SizedBox(width: 8),
                           Text('Featured project',
-                              style: Theme.of(context).textTheme.bodyMedium),
+                              style:
+                              Theme.of(context).textTheme.bodyMedium),
                         ],
                       ),
                     ],
@@ -368,8 +398,6 @@ class _ProjectDialogState extends State<_ProjectDialog> {
                 ),
               ),
             ),
-
-            // Actions
             const Divider(color: AppColors.border, height: 1),
             Padding(
               padding: const EdgeInsets.all(20),
@@ -391,7 +419,9 @@ class _ProjectDialogState extends State<_ProjectDialog> {
                           height: 18,
                           child: CircularProgressIndicator(
                               color: Colors.black, strokeWidth: 2))
-                          : Text(widget.project != null ? 'Update' : 'Add'),
+                          : Text(widget.project != null
+                          ? 'Update'
+                          : 'Add'),
                     ),
                   ),
                 ],
@@ -404,10 +434,13 @@ class _ProjectDialogState extends State<_ProjectDialog> {
   }
 
   Widget _field(String label, TextEditingController ctrl,
-      {int maxLines = 1, String? hint}) {
+      {int maxLines = 1,
+        String? hint,
+        TextInputType keyboardType = TextInputType.text}) {
     return TextFormField(
       controller: ctrl,
       maxLines: maxLines,
+      keyboardType: keyboardType,
       decoration: InputDecoration(labelText: label, hintText: hint),
       validator: label.endsWith('*')
           ? (v) => (v == null || v.isEmpty) ? '$label is required' : null

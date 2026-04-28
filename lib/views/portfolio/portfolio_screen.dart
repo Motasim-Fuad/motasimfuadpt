@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_portfolio/portfolio_selections.dart';
-import 'package:flutter_portfolio/widgets.dart';
+import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:flutter_portfolio/utils/responsive.dart';
+import 'package:flutter_portfolio/views/portfolio/hero_section.dart';
+import 'package:flutter_portfolio/views/portfolio/portfolio_sections.dart';
+import 'package:flutter_portfolio/views/portfolio/portfolio_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'app_theme.dart';
-import 'hero_selections.dart';
 
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
@@ -73,18 +73,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           SliverToBoxAdapter(
             child: Column(
               children: [
-                KeyedSubtree(
-                    key: _navKeys[0], child: const HeroSection()),
-                KeyedSubtree(
-                    key: _navKeys[1], child: const ProjectsSection()),
-                KeyedSubtree(
-                    key: _navKeys[2], child: const SkillsSection()),
-                KeyedSubtree(
-                    key: _navKeys[3], child: const StatsSection()),
-                KeyedSubtree(
-                    key: _navKeys[4], child: const BlogSection()),
-                KeyedSubtree(
-                    key: _navKeys[5], child: const ContactSection()),
+                KeyedSubtree(key: _navKeys[0], child: const HeroSection()),
+                KeyedSubtree(key: _navKeys[1], child: const ProjectsSection()),
+                KeyedSubtree(key: _navKeys[2], child: const SkillsSection()),
+                KeyedSubtree(key: _navKeys[3], child: const StatsSection()),
+                KeyedSubtree(key: _navKeys[4], child: const BlogSection()),
+                KeyedSubtree(key: _navKeys[5], child: const ContactSection()),
                 const _Footer(),
               ],
             ),
@@ -95,9 +89,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 }
 
-// ──────────────────────────────────────────────
-// NAV BAR
-// ──────────────────────────────────────────────
 class _NavBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showBg;
   final int activeIndex;
@@ -125,16 +116,10 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
             ? AppColors.surface.withOpacity(0.95)
             : Colors.transparent,
         border: showBg
-            ? const Border(
-            bottom: BorderSide(color: AppColors.border, width: 1))
+            ? const Border(bottom: BorderSide(color: AppColors.border, width: 1))
             : null,
         boxShadow: showBg
-            ? [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 20,
-          )
-        ]
+            ? [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 20)]
             : [],
       ),
       child: SafeArea(
@@ -142,15 +127,13 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
             children: [
-              // Logo
               GradientText(
-                '< YN />',
-                style: GoogleFonts.jetBrainsMono(
-                    fontSize: 20, fontWeight: FontWeight.w700),
+                'Motasim Fuad',
+                style: GoogleFonts.spaceGrotesk(
+                    fontSize: 18, fontWeight: FontWeight.w700),
                 gradient: AppColors.accentGradient,
               ),
               const Spacer(),
-              // Navigation
               if (!isMobile)
                 Row(
                   children: sections.asMap().entries.map((entry) {
@@ -163,9 +146,7 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: isActive
-                              ? AppColors.cyanDim
-                              : Colors.transparent,
+                          color: isActive ? AppColors.cyanDim : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -174,9 +155,7 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
                             color: isActive
                                 ? AppColors.cyan
                                 : AppColors.textSecondary,
-                            fontWeight: isActive
-                                ? FontWeight.w700
-                                : FontWeight.w500,
+                            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                             fontSize: 14,
                           ),
                         ),
@@ -186,8 +165,7 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
                 )
               else
                 IconButton(
-                  icon: const Icon(Icons.menu_rounded,
-                      color: AppColors.textPrimary),
+                  icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
                   onPressed: () => _showMobileMenu(context),
                 ),
             ],
@@ -244,9 +222,6 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-// ──────────────────────────────────────────────
-// FOOTER
-// ──────────────────────────────────────────────
 class _Footer extends StatelessWidget {
   const _Footer();
 
@@ -263,8 +238,8 @@ class _Footer extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               GradientText(
-                '< YN />',
-                style: GoogleFonts.jetBrainsMono(
+                'Motasim Fuad',
+                style: GoogleFonts.spaceGrotesk(
                     fontSize: 16, fontWeight: FontWeight.w700),
                 gradient: AppColors.accentGradient,
               ),
@@ -272,7 +247,7 @@ class _Footer extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            '© ${DateTime.now().year} Your Name. Built with Flutter & Firebase.',
+            '© ${DateTime.now().year} Md Motasim Fuad. Built with Flutter & Firebase.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontSize: 12,
               color: AppColors.textMuted,

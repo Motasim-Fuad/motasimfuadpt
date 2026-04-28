@@ -2,11 +2,12 @@ import 'dart:math';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_portfolio/widgets.dart';
+import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:flutter_portfolio/utils/responsive.dart';
+import 'package:flutter_portfolio/views/portfolio/portfolio_widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'app_theme.dart';
 
 class HeroSection extends StatelessWidget {
   const HeroSection({super.key});
@@ -28,10 +29,7 @@ class HeroSection extends StatelessWidget {
       decoration: const BoxDecoration(color: AppColors.bg),
       child: Stack(
         children: [
-          // Background grid pattern
           Positioned.fill(child: _GridBackground()),
-
-          // Floating glowing orbs
           Positioned(
             top: -100,
             right: -100,
@@ -42,8 +40,6 @@ class HeroSection extends StatelessWidget {
             left: -150,
             child: _GlowOrb(color: AppColors.purple, size: 350),
           ),
-
-          // Content
           Center(
             child: Container(
               constraints: const BoxConstraints(maxWidth: 1200),
@@ -56,8 +52,6 @@ class HeroSection extends StatelessWidget {
                   : _DesktopHero(onLaunch: _launch),
             ),
           ),
-
-          // Scroll indicator
           Positioned(
             bottom: 30,
             left: 0,
@@ -116,7 +110,6 @@ class _HeroText extends StatelessWidget {
       crossAxisAlignment:
       centered ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
-        // Label
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
@@ -134,8 +127,7 @@ class _HeroText extends StatelessWidget {
                   color: AppColors.cyan,
                   shape: BoxShape.circle,
                 ),
-              )
-                  .animate(onPlay: (c) => c.repeat())
+              ).animate(onPlay: (c) => c.repeat())
                   .scaleXY(end: 1.5, duration: 800.ms)
                   .then()
                   .scaleXY(end: 1, duration: 800.ms),
@@ -150,13 +142,8 @@ class _HeroText extends StatelessWidget {
               ),
             ],
           ),
-        )
-            .animate()
-            .fadeIn(duration: 600.ms, delay: 200.ms)
-            .slideX(begin: -0.2, end: 0),
+        ).animate().fadeIn(duration: 600.ms, delay: 200.ms).slideX(begin: -0.2, end: 0),
         const SizedBox(height: 24),
-
-        // Name
         Text(
           'Hi, I\'m',
           style: Theme.of(context).textTheme.displaySmall?.copyWith(
@@ -172,12 +159,8 @@ class _HeroText extends StatelessWidget {
             fontSize: Responsive.isMobile(context) ? 48 : 72,
           ),
           gradient: AppColors.accentGradient,
-        ).animate().fadeIn(duration: 600.ms, delay: 400.ms).slideY(
-            begin: 0.3, end: 0),
-
+        ).animate().fadeIn(duration: 600.ms, delay: 400.ms).slideY(begin: 0.3, end: 0),
         const SizedBox(height: 12),
-
-        // Animated typing role
         DefaultTextStyle(
           style: GoogleFonts.spaceGrotesk(
             color: AppColors.textSecondary,
@@ -223,7 +206,6 @@ class _HeroText extends StatelessWidget {
             ],
           ),
         ).animate().fadeIn(duration: 600.ms, delay: 600.ms),
-
         const SizedBox(height: 20),
         Text(
           'Flutter & Mobile Developer passionate about crafting beautiful,\nperformant applications with exceptional user experiences.',
@@ -233,10 +215,7 @@ class _HeroText extends StatelessWidget {
               ?.copyWith(fontSize: 15, height: 1.8),
           textAlign: centered ? TextAlign.center : TextAlign.start,
         ).animate().fadeIn(duration: 600.ms, delay: 700.ms),
-
         const SizedBox(height: 36),
-
-        // CTA Buttons
         Wrap(
           spacing: 14,
           runSpacing: 14,
@@ -258,29 +237,25 @@ class _HeroText extends StatelessWidget {
             ),
           ],
         ).animate().fadeIn(duration: 600.ms, delay: 800.ms),
-
         const SizedBox(height: 40),
-
-        // Social links
         Row(
-          mainAxisAlignment:
-          centered ? MainAxisAlignment.center : MainAxisAlignment.start,
+          mainAxisAlignment: centered ? MainAxisAlignment.center : MainAxisAlignment.start,
           children: [
             _SocialLink(
               icon: FontAwesomeIcons.github,
-              url: 'https://github.com',
+              url: 'https://github.com/motasimfuad',
               tooltip: 'GitHub',
             ),
             const SizedBox(width: 16),
             _SocialLink(
               icon: FontAwesomeIcons.linkedin,
-              url: 'https://linkedin.com',
+              url: 'https://linkedin.com/in/motasimfuad',
               tooltip: 'LinkedIn',
             ),
             const SizedBox(width: 16),
             _SocialLink(
               icon: FontAwesomeIcons.twitter,
-              url: 'https://twitter.com',
+              url: 'https://twitter.com/motasimfuad',
               tooltip: 'Twitter',
             ),
           ],
@@ -297,7 +272,6 @@ class _ProfileImage extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Rotating border
           Container(
             width: 300,
             height: 300,
@@ -312,11 +286,7 @@ class _ProfileImage extends StatelessWidget {
                 ],
               ),
             ),
-          )
-              .animate(onPlay: (c) => c.repeat())
-              .rotate(duration: 4000.ms, curve: Curves.linear),
-
-          // Profile picture
+          ).animate(onPlay: (c) => c.repeat()).rotate(duration: 4000.ms, curve: Curves.linear),
           Container(
             width: 285,
             height: 285,
@@ -324,20 +294,12 @@ class _ProfileImage extends StatelessWidget {
               shape: BoxShape.circle,
               color: AppColors.card,
               border: Border.all(color: AppColors.bg, width: 4),
-              image: DecorationImage(
+              image: const DecorationImage(
                 image: AssetImage('assets/profile_picture.jpeg'),
                 fit: BoxFit.cover,
               ),
             ),
-            // child: const Icon(
-            //   Icons.person_rounded,
-            //   size: 120,
-            //   color: AppColors.textMuted,
-            // ),
-
           ),
-
-          // Tech badge floating
           Positioned(
             bottom: 20,
             right: 20,
@@ -375,9 +337,7 @@ class _ProfileImage extends StatelessWidget {
           ),
         ],
       ),
-    )
-        .animate()
-        .fadeIn(duration: 800.ms, delay: 400.ms)
+    ).animate().fadeIn(duration: 800.ms, delay: 400.ms)
         .scale(begin: const Offset(0.8, 0.8), end: const Offset(1, 1));
   }
 }
@@ -387,8 +347,7 @@ class _SocialLink extends StatelessWidget {
   final String url;
   final String tooltip;
 
-  const _SocialLink(
-      {required this.icon, required this.url, required this.tooltip});
+  const _SocialLink({required this.icon, required this.url, required this.tooltip});
 
   @override
   Widget build(BuildContext context) {
@@ -437,8 +396,7 @@ class _ScrollIndicator extends StatelessWidget {
           ),
         ),
       ],
-    )
-        .animate(onPlay: (c) => c.repeat(reverse: true))
+    ).animate(onPlay: (c) => c.repeat(reverse: true))
         .fadeIn(duration: 1000.ms)
         .then(delay: 500.ms)
         .fadeOut(duration: 1000.ms);

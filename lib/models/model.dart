@@ -1,8 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// ──────────────────────────────────────────────
-// PROJECT MODEL
-// ──────────────────────────────────────────────
 class ProjectModel {
   final String id;
   final String title;
@@ -57,14 +54,11 @@ class ProjectModel {
   };
 }
 
-// ──────────────────────────────────────────────
-// SKILL MODEL
-// ──────────────────────────────────────────────
 class SkillModel {
   final String id;
   final String name;
-  final String category; // e.g. "Mobile", "Language", "Tool", "Backend"
-  final int proficiency; // 0–100
+  final String category;
+  final int proficiency;
   final String iconName;
 
   SkillModel({
@@ -94,9 +88,6 @@ class SkillModel {
   };
 }
 
-// ──────────────────────────────────────────────
-// BLOG MODEL
-// ──────────────────────────────────────────────
 class BlogModel {
   final String id;
   final String title;
@@ -130,8 +121,7 @@ class BlogModel {
       imageUrl: data['imageUrl'] ?? '',
       tags: List<String>.from(data['tags'] ?? []),
       readTimeMinutes: data['readTimeMinutes'] ?? 5,
-      publishedAt:
-      (data['publishedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      publishedAt: (data['publishedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       published: data['published'] ?? true,
     );
   }
@@ -148,9 +138,6 @@ class BlogModel {
   };
 }
 
-// ──────────────────────────────────────────────
-// CONTACT MODEL
-// ──────────────────────────────────────────────
 class ContactModel {
   final String id;
   final String name;
@@ -193,9 +180,6 @@ class ContactModel {
   };
 }
 
-// ──────────────────────────────────────────────
-// STATS MODEL (from Firestore "stats" doc)
-// ──────────────────────────────────────────────
 class StatsModel {
   final int projectsCompleted;
   final int yearsExperience;

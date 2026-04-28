@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_portfolio/controllers/contact_controller.dart';
+import 'package:flutter_portfolio/models/model.dart';
+import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'app_theme.dart';
-import 'firebase_services.dart';
-import 'model.dart';
+
 
 class MessagesPage extends StatelessWidget {
   const MessagesPage({super.key});
@@ -16,30 +18,58 @@ class MessagesPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Messages', style: Theme.of(context).textTheme.headlineLarge),
-          Text('Contact form submissions',
-              style: Theme.of(context).textTheme.bodyMedium),
+          Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Messages',
+                      style: Theme.of(context).textTheme.headlineLarge),
+                  Text('Contact form submissions',
+                      style: Theme.of(context).textTheme.bodyMedium),
+                ],
+              ),
+              const Spacer(),
+              Obx(() {
+                final unread = ContactController.to.unreadCount;
+                if (unread == 0) return const SizedBox();
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.cyanDim,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(
+                    '$unread unread',
+                    style: GoogleFonts.spaceGrotesk(
+                        color: AppColors.cyan,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700),
+                  ),
+                );
+              }),
+            ],
+          ),
           const SizedBox(height: 32),
           Expanded(
-            child: StreamBuilder<List<ContactModel>>(
-              stream: FirebaseService().streamContacts(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                      child: CircularProgressIndicator(color: AppColors.cyan));
-                }
-                final msgs = snapshot.data ?? [];
-                if (msgs.isEmpty) {
-                  return const _EmptyMessages();
-                }
-                return ListView.separated(
-                  itemCount: msgs.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (_, i) =>
-                      _MessageCard(contact: msgs[i], index: i),
-                );
-              },
-            ),
+            child: Obx(() {
+              final msgs = ContactController.to.contacts;
+              if (ContactController.to.isLoading.value) {
+                return const Center(
+                    child:
+                    CircularProgressIndicator(color: AppColors.cyan));
+              }
+              if (msgs.isEmpty) {
+                return const _EmptyMessages();
+              }
+              return ListView.separated(
+                itemCount: msgs.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (_, i) =>
+                    _MessageCard(contact: msgs[i], index: i),
+              );
+            }),
           ),
         ],
       ),
@@ -76,7 +106,7 @@ class _MessageCard extends StatelessWidget {
       ),
       onExpansionChanged: (expanded) {
         if (expanded && !contact.read) {
-          FirebaseService().markContactRead(contact.id);
+          ContactController.to.markRead(contact.id);
         }
       },
       leading: Stack(
@@ -134,8 +164,7 @@ class _MessageCard extends StatelessWidget {
                 ? Icons.mark_email_unread_rounded
                 : Icons.mark_email_read_rounded,
             size: 14,
-            color:
-            !contact.read ? AppColors.cyan : AppColors.textMuted,
+            color: !contact.read ? AppColors.cyan : AppColors.textMuted,
           ),
         ],
       ),
@@ -144,7 +173,8 @@ class _MessageCard extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           decoration: const BoxDecoration(
             color: AppColors.card,
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(14)),
+            borderRadius:
+            BorderRadius.vertical(bottom: Radius.circular(14)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,9 +221,8 @@ class _MessageCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton.icon(
-                    onPressed: () async {
-                      await FirebaseService().deleteContact(contact.id);
-                    },
+                    onPressed: () =>
+                        ContactController.to.delete(contact.id),
                     icon: const Icon(Icons.delete_outline_rounded,
                         size: 16, color: Colors.redAccent),
                     label: const Text('Delete',

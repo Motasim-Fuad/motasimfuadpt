@@ -1,15 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_portfolio/theme/app_theme.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../models/model.dart';
 
-import 'app_theme.dart';
-import 'model.dart';
-
-// ──────────────────────────────────────────────
-// GRADIENT TEXT
-// ──────────────────────────────────────────────
 class GradientText extends StatelessWidget {
   final String text;
   final TextStyle? style;
@@ -34,9 +31,6 @@ class GradientText extends StatelessWidget {
   }
 }
 
-// ──────────────────────────────────────────────
-// SECTION HEADER
-// ──────────────────────────────────────────────
 class SectionHeader extends StatelessWidget {
   final String label;
   final String title;
@@ -89,9 +83,6 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
-// ──────────────────────────────────────────────
-// GLOWING CONTAINER
-// ──────────────────────────────────────────────
 class GlowCard extends StatelessWidget {
   final Widget child;
   final Color glowColor;
@@ -127,9 +118,6 @@ class GlowCard extends StatelessWidget {
   }
 }
 
-// ──────────────────────────────────────────────
-// PROJECT CARD
-// ──────────────────────────────────────────────
 class ProjectCard extends StatefulWidget {
   final ProjectModel project;
   final int index;
@@ -163,59 +151,26 @@ class _ProjectCardState extends State<ProjectCard> {
             color: _hovered ? AppColors.cyan.withOpacity(0.5) : AppColors.border,
           ),
           boxShadow: _hovered
-              ? [
-            BoxShadow(
-              color: AppColors.cyan.withOpacity(0.1),
-              blurRadius: 30,
-              spreadRadius: 2,
-            )
-          ]
+              ? [BoxShadow(color: AppColors.cyan.withOpacity(0.1), blurRadius: 30, spreadRadius: 2)]
               : [],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image area
-            // Container(
-            //   height: 180,
-            //   decoration: BoxDecoration(
-            //     borderRadius:
-            //     const BorderRadius.vertical(top: Radius.circular(20)),
-            //     color: AppColors.surface,
-            //     image: widget.project.imageUrl.isNotEmpty
-            //         ? DecorationImage(
-            //       image: NetworkImage(widget.project.imageUrl),
-            //       fit: BoxFit.cover,
-            //     )
-            //         : null,
-            //   ),
-            //   child: widget.project.imageUrl.isEmpty
-            //       ? Center(
-            //     child: Icon(
-            //       Icons.phone_android_rounded,
-            //       size: 60,
-            //       color: AppColors.cyan.withOpacity(0.3),
-            //     ),
-            //   )
-            //       : null,
-            // ),
-            // Image area — এই অংশটা replace করো
             ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               child: SizedBox(
                 height: 180,
                 width: double.infinity,
                 child: widget.project.imageUrl.isNotEmpty
-                    ? Image.network(
-                  widget.project.imageUrl,
+                    ? CachedNetworkImage(
+                  imageUrl: widget.project.imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _ImagePlaceholder(
+                  placeholder: (_, __) => Container(color: AppColors.surface),
+                  errorWidget: (_, __, ___) => _ImagePlaceholder(
                     icon: Icons.phone_android_rounded,
                     color: AppColors.cyan,
                   ),
-                  loadingBuilder: (_, child, progress) => progress == null
-                      ? child
-                      : const _ImageLoading(),
                 )
                     : _ImagePlaceholder(
                   icon: Icons.phone_android_rounded,
@@ -231,8 +186,7 @@ class _ProjectCardState extends State<ProjectCard> {
                   if (widget.project.featured)
                     Container(
                       margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.cyanDim,
                         borderRadius: BorderRadius.circular(100),
@@ -249,9 +203,7 @@ class _ProjectCardState extends State<ProjectCard> {
                     ),
                   Text(
                     widget.project.title,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontSize: 18,
-                    ),
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: 18),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -267,13 +219,11 @@ class _ProjectCardState extends State<ProjectCard> {
                     children: widget.project.technologies
                         .take(4)
                         .map((tech) => Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.surface,
                         borderRadius: BorderRadius.circular(6),
-                        border:
-                        Border.all(color: AppColors.border),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Text(
                         tech,
@@ -310,10 +260,7 @@ class _ProjectCardState extends State<ProjectCard> {
           ],
         ),
       ),
-    )
-        .animate(delay: (widget.index * 100).ms)
-        .fadeIn(duration: 500.ms)
-        .slideY(begin: 0.2, end: 0);
+    ).animate(delay: (widget.index * 100).ms).fadeIn(duration: 500.ms).slideY(begin: 0.2, end: 0);
   }
 }
 
@@ -340,20 +287,16 @@ class _LinkButton extends StatelessWidget {
           color: isCyan ? AppColors.cyanDim : AppColors.surface,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isCyan
-                ? AppColors.cyan.withOpacity(0.4)
-                : AppColors.border,
+            color: isCyan ? AppColors.cyan.withOpacity(0.4) : AppColors.border,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             icon is IconData
-                ? Icon(icon as IconData,
-                size: 13,
+                ? Icon(icon as IconData, size: 13,
                 color: isCyan ? AppColors.cyan : AppColors.textSecondary)
-                : FaIcon(icon as IconData,
-                size: 13,
+                : FaIcon(icon as IconData, size: 13,
                 color: isCyan ? AppColors.cyan : AppColors.textSecondary),
             const SizedBox(width: 6),
             Text(
@@ -371,9 +314,6 @@ class _LinkButton extends StatelessWidget {
   }
 }
 
-// ──────────────────────────────────────────────
-// SKILL BAR
-// ──────────────────────────────────────────────
 class SkillBar extends StatelessWidget {
   final SkillModel skill;
   final int index;
@@ -419,18 +359,15 @@ class SkillBar extends StatelessWidget {
               return Stack(
                 children: [
                   Container(
-                    width: constraints.maxWidth *
-                        (skill.proficiency / 100),
+                    width: constraints.maxWidth * (skill.proficiency / 100),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [AppColors.cyan, AppColors.purple],
                       ),
                       borderRadius: BorderRadius.circular(100),
                     ),
-                  )
-                      .animate(delay: (index * 80 + 300).ms)
-                      .slideX(begin: -1, end: 0, duration: 800.ms,
-                      curve: Curves.easeOutCubic),
+                  ).animate(delay: (index * 80 + 300).ms)
+                      .slideX(begin: -1, end: 0, duration: 800.ms, curve: Curves.easeOutCubic),
                 ],
               );
             }),
@@ -441,9 +378,6 @@ class SkillBar extends StatelessWidget {
   }
 }
 
-// ──────────────────────────────────────────────
-// BLOG CARD
-// ──────────────────────────────────────────────
 class BlogCard extends StatelessWidget {
   final BlogModel blog;
   final int index;
@@ -457,40 +391,20 @@ class BlogCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Container(
-          //   height: 160,
-          //   decoration: BoxDecoration(
-          //     borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          //     color: AppColors.surface,
-          //     image: blog.imageUrl.isNotEmpty
-          //         ? DecorationImage(
-          //       image: NetworkImage(blog.imageUrl),
-          //       fit: BoxFit.cover,
-          //     )
-          //         : null,
-          //   ),
-          //   child: blog.imageUrl.isEmpty
-          //       ? Center(
-          //       child: Icon(Icons.article_rounded,
-          //           size: 50, color: AppColors.purple.withOpacity(0.3)))
-          //       : null,
-          // ),
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             child: SizedBox(
               height: 160,
               width: double.infinity,
               child: blog.imageUrl.isNotEmpty
-                  ? Image.network(
-                blog.imageUrl,
+                  ? CachedNetworkImage(
+                imageUrl: blog.imageUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _ImagePlaceholder(
+                placeholder: (_, __) => Container(color: AppColors.surface),
+                errorWidget: (_, __, ___) => _ImagePlaceholder(
                   icon: Icons.article_rounded,
                   color: AppColors.purple,
                 ),
-                loadingBuilder: (_, child, progress) => progress == null
-                    ? child
-                    : const _ImageLoading(),
               )
                   : _ImagePlaceholder(
                 icon: Icons.article_rounded,
@@ -537,13 +451,11 @@ class BlogCard extends StatelessWidget {
                 const SizedBox(height: 14),
                 Row(
                   children: [
-                    const Icon(Icons.schedule_rounded,
-                        size: 14, color: AppColors.textMuted),
+                    const Icon(Icons.schedule_rounded, size: 14, color: AppColors.textMuted),
                     const SizedBox(width: 4),
                     Text(
                       '${blog.readTimeMinutes} min read',
-                      style: GoogleFonts.inter(
-                          color: AppColors.textMuted, fontSize: 12),
+                      style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 12),
                     ),
                   ],
                 ),
@@ -552,16 +464,10 @@ class BlogCard extends StatelessWidget {
           ),
         ],
       ),
-    )
-        .animate(delay: (index * 100).ms)
-        .fadeIn(duration: 500.ms)
-        .slideY(begin: 0.2, end: 0);
+    ).animate(delay: (index * 100).ms).fadeIn(duration: 500.ms).slideY(begin: 0.2, end: 0);
   }
 }
 
-// ──────────────────────────────────────────────
-// STATS CARD
-// ──────────────────────────────────────────────
 class StatCard extends StatelessWidget {
   final String value;
   final String label;
@@ -623,13 +529,9 @@ class StatCard extends StatelessWidget {
           ),
         ],
       ),
-    )
-        .animate(delay: (index * 100).ms)
-        .fadeIn(duration: 500.ms)
+    ).animate(delay: (index * 100).ms).fadeIn(duration: 500.ms)
         .scale(begin: const Offset(0.9, 0.9), end: const Offset(1, 1));
   }
-
-
 }
 
 class _ImagePlaceholder extends StatelessWidget {
@@ -643,27 +545,6 @@ class _ImagePlaceholder extends StatelessWidget {
       color: AppColors.surface,
       child: Center(
         child: Icon(icon, size: 52, color: color.withOpacity(0.25)),
-      ),
-    );
-  }
-}
-
-class _ImageLoading extends StatelessWidget {
-  const _ImageLoading();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.surface,
-      child: const Center(
-        child: SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(
-            color: AppColors.cyan,
-            strokeWidth: 2,
-          ),
-        ),
       ),
     );
   }

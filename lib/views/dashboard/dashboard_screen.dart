@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_portfolio/project_pages.dart';
-import 'package:flutter_portfolio/widgets.dart';
+import 'package:flutter_portfolio/controllers/auth_controller.dart';
+import 'package:flutter_portfolio/controllers/contact_controller.dart';
+import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:flutter_portfolio/utils/responsive.dart';
+import 'package:flutter_portfolio/views/dashboard/blogs_page.dart';
+import 'package:flutter_portfolio/views/dashboard/messages_page.dart';
+import 'package:flutter_portfolio/views/dashboard/overview_page.dart';
+import 'package:flutter_portfolio/views/dashboard/projects_page.dart';
+import 'package:flutter_portfolio/views/dashboard/skills_page.dart';
+import 'package:flutter_portfolio/views/dashboard/stats_page.dart';
+import 'package:flutter_portfolio/views/portfolio/portfolio_widgets.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'app_theme.dart';
-import 'firebase_services.dart';
-import 'login_screen.dart';
-import 'message_pages.dart';
-import 'overview_pages.dart';
-
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -25,14 +28,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final _pages = const [
     OverviewPage(),
     ProjectsPage(),
+    SkillsPage(),
+    BlogsPage(),
+    StatsPage(),
     MessagesPage(),
   ];
 
   final _navItems = [
     _NavItem(icon: Icons.dashboard_rounded, label: 'Overview'),
     _NavItem(icon: Icons.phone_android_rounded, label: 'Projects'),
+    _NavItem(icon: Icons.code_rounded, label: 'Skills'),
+    _NavItem(icon: Icons.article_rounded, label: 'Blogs'),
+    _NavItem(icon: Icons.bar_chart_rounded, label: 'Stats'),
     _NavItem(icon: Icons.mail_rounded, label: 'Messages'),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    ContactController.to.initAdminStream();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,30 +58,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
       drawer: isMobile ? _buildDrawer() : null,
       body: Row(
         children: [
-          // Sidebar (desktop/tablet)
           if (!isMobile)
             _Sidebar(
               items: _navItems,
               selectedIndex: _selectedIndex,
               collapsed: _sidebarCollapsed,
               onSelect: (i) => setState(() => _selectedIndex = i),
-              onToggle: () =>
-                  setState(() => _sidebarCollapsed = !_sidebarCollapsed),
+              onToggle: () => setState(() => _sidebarCollapsed = !_sidebarCollapsed),
             ),
-
-          // Main content
           Expanded(
             child: Column(
               children: [
-                // Top bar
                 _TopBar(
                   title: _navItems[_selectedIndex].label,
                   isMobile: isMobile,
-                  onMenuTap: isMobile
-                      ? () => Scaffold.of(context).openDrawer()
-                      : null,
+                  onMenuTap: isMobile ? () => Scaffold.of(context).openDrawer() : null,
                 ),
-                // Page content
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
@@ -90,27 +97,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Padding(
               padding: const EdgeInsets.all(20),
               child: GradientText(
-                '< YN />',
-                style: GoogleFonts.jetBrainsMono(
-                    fontSize: 22, fontWeight: FontWeight.w800),
+                'Motasim Fuad',
+                style: GoogleFonts.spaceGrotesk(fontSize: 18, fontWeight: FontWeight.w800),
                 gradient: AppColors.accentGradient,
               ),
             ),
             const Divider(color: AppColors.border),
             ..._navItems.asMap().entries.map((e) => ListTile(
               leading: Icon(e.value.icon,
-                  color: e.key == _selectedIndex
-                      ? AppColors.cyan
-                      : AppColors.textSecondary),
+                  color: e.key == _selectedIndex ? AppColors.cyan : AppColors.textSecondary),
               title: Text(
                 e.value.label,
                 style: GoogleFonts.spaceGrotesk(
-                  color: e.key == _selectedIndex
-                      ? AppColors.cyan
-                      : AppColors.textPrimary,
-                  fontWeight: e.key == _selectedIndex
-                      ? FontWeight.w700
-                      : FontWeight.w500,
+                  color: e.key == _selectedIndex ? AppColors.cyan : AppColors.textPrimary,
+                  fontWeight: e.key == _selectedIndex ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
               selected: e.key == _selectedIndex,
@@ -124,25 +124,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const Divider(color: AppColors.border),
             ListTile(
               leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-              title: Text('Sign Out',
-                  style: GoogleFonts.spaceGrotesk(color: Colors.redAccent)),
-              onTap: _signOut,
+              title: Text('Sign Out', style: GoogleFonts.spaceGrotesk(color: Colors.redAccent)),
+              onTap: () => AuthController.to.signOut(),
             ),
           ],
         ),
       ),
     );
   }
-
-  Future<void> _signOut() async {
-    await FirebaseService().signOut();
-    Get.off(() => const LoginScreen());
-  }
 }
 
-// ──────────────────────────────────────────────
-// SIDEBAR
-// ──────────────────────────────────────────────
 class _Sidebar extends StatelessWidget {
   final List<_NavItem> items;
   final int selectedIndex;
@@ -172,53 +163,38 @@ class _Sidebar extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 24),
-          // Logo
           AnimatedOpacity(
             duration: const Duration(milliseconds: 200),
             opacity: collapsed ? 0 : 1,
             child: collapsed
                 ? const SizedBox(height: 32)
                 : GradientText(
-              '< YN />',
-              style: GoogleFonts.jetBrainsMono(
-                  fontSize: 18, fontWeight: FontWeight.w800),
+              'Motasim Fuad',
+              style: GoogleFonts.spaceGrotesk(fontSize: 14, fontWeight: FontWeight.w800),
               gradient: AppColors.accentGradient,
             ),
           ),
           const SizedBox(height: 32),
-
-          // Nav Items
           ...items.asMap().entries.map((e) => _SidebarItem(
             item: e.value,
             isSelected: e.key == selectedIndex,
             collapsed: collapsed,
             onTap: () => onSelect(e.key),
           )),
-
           const Spacer(),
-
-          // Sign Out
           _SidebarItem(
-            item: _NavItem(
-                icon: Icons.logout_rounded, label: 'Sign Out'),
+            item: _NavItem(icon: Icons.logout_rounded, label: 'Sign Out'),
             isSelected: false,
             collapsed: collapsed,
-            onTap: () async {
-              await FirebaseService().signOut();
-              Get.off(() => const LoginScreen());
-            },
+            onTap: () => AuthController.to.signOut(),
             isDestructive: true,
           ),
-
-          // Collapse toggle
           Padding(
             padding: const EdgeInsets.all(12),
             child: IconButton(
               onPressed: onToggle,
               icon: Icon(
-                collapsed
-                    ? Icons.keyboard_double_arrow_right_rounded
-                    : Icons.keyboard_double_arrow_left_rounded,
+                collapsed ? Icons.keyboard_double_arrow_right_rounded : Icons.keyboard_double_arrow_left_rounded,
                 color: AppColors.textMuted,
               ),
             ),
@@ -259,17 +235,14 @@ class _SidebarItem extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-          padding: EdgeInsets.symmetric(
-              horizontal: collapsed ? 0 : 14, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: collapsed ? 0 : 14, vertical: 12),
           decoration: BoxDecoration(
             color: isSelected ? AppColors.cyanDim : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: collapsed
-                ? MainAxisAlignment.center
-                : MainAxisAlignment.start,
+            mainAxisAlignment: collapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
             children: [
               Icon(item.icon, color: color, size: 20),
               if (!collapsed) ...[
@@ -294,16 +267,12 @@ class _SidebarItem extends StatelessWidget {
   }
 }
 
-// ──────────────────────────────────────────────
-// TOP BAR
-// ──────────────────────────────────────────────
 class _TopBar extends StatelessWidget {
   final String title;
   final bool isMobile;
   final VoidCallback? onMenuTap;
 
-  const _TopBar(
-      {required this.title, required this.isMobile, this.onMenuTap});
+  const _TopBar({required this.title, required this.isMobile, this.onMenuTap});
 
   @override
   Widget build(BuildContext context) {
@@ -319,12 +288,10 @@ class _TopBar extends StatelessWidget {
           if (isMobile && onMenuTap != null)
             IconButton(
               onPressed: onMenuTap,
-              icon: const Icon(Icons.menu_rounded,
-                  color: AppColors.textPrimary),
+              icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
             ),
           Text(title, style: Theme.of(context).textTheme.headlineMedium),
           const Spacer(),
-          // Admin badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
@@ -334,8 +301,7 @@ class _TopBar extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.admin_panel_settings_rounded,
-                    size: 14, color: AppColors.cyan),
+                const Icon(Icons.admin_panel_settings_rounded, size: 14, color: AppColors.cyan),
                 const SizedBox(width: 6),
                 Text(
                   'Admin',
