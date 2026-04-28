@@ -21,15 +21,30 @@ class StatsController extends GetxController {
     _service.streamStats().listen((s) {
       stats.value = s;
       isLoading.value = false;
-    }, onError: (_) => isLoading.value = false);
+      print('Stats updated: ${s.projectsCompleted} projects');
+    }, onError: (e) {
+      print('Stats stream error: $e');
+      isLoading.value = false;
+    });
     refreshDashCounts();
   }
 
   Future<void> refreshDashCounts() async {
     try {
+      print('Refreshing dashboard counts...');
       final counts = await _service.getDashboardCounts();
+      print('Dashboard counts received: $counts');
       dashCounts.value = counts;
-    } catch (_) {}
+    } catch (e) {
+      print('Dashboard counts error: $e');
+      // Fallback data
+      dashCounts.value = {
+        'projects': 0,
+        'skills': 0,
+        'blogs': 0,
+        'unreadMessages': 0,
+      };
+    }
   }
 
   Future<void> updateStats(StatsModel s) => _service.updateStats(s);

@@ -205,12 +205,32 @@ class BlogSection extends StatelessWidget {
             ),
             const SizedBox(height: 60),
             StreamBuilder<List<BlogModel>>(
-              stream: FirebaseService().streamBlogs(),
+              stream: FirebaseService().streamBlogs(publishedOnly: true),
               builder: (context, snapshot) {
-                final blogs = snapshot.data ?? [];
-                if (blogs.isEmpty) {
-                  return _EmptyState(icon: Icons.article_rounded, label: 'No articles yet');
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppColors.cyan),
+                  );
                 }
+
+                if (snapshot.hasError) {
+                  print('BlogSection error: ${snapshot.error}');
+                  return _EmptyState(
+                    icon: Icons.error_outline,
+                    label: 'Error loading blogs: ${snapshot.error}',
+                  );
+                }
+
+                final blogs = snapshot.data ?? [];
+                print('BlogSection: ${blogs.length} blogs to display');
+
+                if (blogs.isEmpty) {
+                  return _EmptyState(
+                    icon: Icons.article_rounded,
+                    label: 'No articles yet. Check back soon!',
+                  );
+                }
+
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -220,7 +240,7 @@ class BlogSection extends StatelessWidget {
                     mainAxisSpacing: 20,
                     childAspectRatio: isMobile ? 0.9 : 0.75,
                   ),
-                  itemCount: blogs.take(6).length,
+                  itemCount: blogs.length,
                   itemBuilder: (_, i) => BlogCard(blog: blogs[i], index: i),
                 );
               },

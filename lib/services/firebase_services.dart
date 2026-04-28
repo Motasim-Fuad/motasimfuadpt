@@ -80,16 +80,24 @@ class FirebaseService {
   }
 
   // ─── BLOGS ──────────────────────────────────
+// ─── BLOGS ──────────────────────────────────
   Stream<List<BlogModel>> streamBlogs({bool publishedOnly = true}) {
     Query query = _db
         .collection('blogs')
         .orderBy('publishedAt', descending: true);
+
     if (publishedOnly) {
       query = query.where('published', isEqualTo: true);
     }
-    return query
-        .snapshots()
-        .map((s) => s.docs.map(BlogModel.fromFirestore).toList());
+
+    return query.snapshots().map((s) {
+      final blogs = s.docs.map(BlogModel.fromFirestore).toList();
+      print('Blogs stream: ${blogs.length} blogs found, publishedOnly=$publishedOnly'); // Debug
+      return blogs;
+    }).handleError((error) {
+      print('Blogs stream error: $error');
+      return <BlogModel>[];
+    });
   }
 
   Future<void> addBlog(BlogModel blog) async {

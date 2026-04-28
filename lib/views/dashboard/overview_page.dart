@@ -12,6 +12,11 @@ class OverviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ডাটা রিফ্রেশ করুন
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      StatsController.to.refreshDashCounts();
+    });
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -23,6 +28,12 @@ class OverviewPage extends StatelessWidget {
           const SizedBox(height: 32),
           Obx(() {
             final counts = StatsController.to.dashCounts;
+            print('Overview counts: $counts'); // Debug
+            if (counts.isEmpty) {
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.cyan),
+              );
+            }
             return _StatsGrid(counts: counts);
           }),
           const SizedBox(height: 32),
