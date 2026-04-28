@@ -346,11 +346,11 @@ class _ContactInfo extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 32),
-          _InfoRow(icon: Icons.mail_outline_rounded, text: 'motasimfuad@gmail.com'),
+          _InfoRow(icon: Icons.mail_outline_rounded, text: 'motasimfuad99@gmail.com'),
           const SizedBox(height: 16),
           _InfoRow(icon: Icons.location_on_outlined, text: 'Dhaka, Bangladesh'),
           const SizedBox(height: 16),
-          _InfoRow(icon: Icons.access_time_rounded, text: 'Mon - Fri, 9am - 6pm'),
+          //_InfoRow(icon: Icons.access_time_rounded, text: 'Mon - Fri, 9am - 6pm'),
         ],
       ),
     );

@@ -223,14 +223,14 @@ class _HeroText extends StatelessWidget {
           children: [
             ElevatedButton.icon(
               onPressed: () {
-                onLaunch('https://drive.google.com/file/d/18JN18158887/view?usp=drivesdk');
+                onLaunch('https://drive.google.com/file/d/1a69JLyiGR6IMa985k_VMoVQC57PP6Dd2/view?usp=sharing');
               },
               icon: const Icon(Icons.download_rounded, size: 18),
               label: const Text('Download CV'),
             ),
             OutlinedButton.icon(
               onPressed: () {
-                onLaunch('https://mail.google.com/mail/?view=cm&fs=1&to=motasimfuad@gmail.com');
+                onLaunch('https://mail.google.com/mail/?view=cm&fs=1&to=motasimfuad99@gmail.com');
               },
               icon: const Icon(Icons.mail_outline_rounded, size: 18),
               label: const Text('Contact Me'),
@@ -243,21 +243,21 @@ class _HeroText extends StatelessWidget {
           children: [
             _SocialLink(
               icon: FontAwesomeIcons.github,
-              url: 'https://github.com/motasimfuad',
+              url: 'https://github.com/Motasim-Fuad',
               tooltip: 'GitHub',
             ),
             const SizedBox(width: 16),
             _SocialLink(
               icon: FontAwesomeIcons.linkedin,
-              url: 'https://linkedin.com/in/motasimfuad',
+              url: 'https://www.linkedin.com/in/motasim-fuad-27949b319/',
               tooltip: 'LinkedIn',
             ),
             const SizedBox(width: 16),
-            _SocialLink(
-              icon: FontAwesomeIcons.twitter,
-              url: 'https://twitter.com/motasimfuad',
-              tooltip: 'Twitter',
-            ),
+            // _SocialLink(
+            //   icon: FontAwesomeIcons.twitter,
+            //   url: 'https://twitter.com/motasimfuad',
+            //   tooltip: 'Twitter',
+            // ),
           ],
         ).animate().fadeIn(duration: 600.ms, delay: 900.ms),
       ],
