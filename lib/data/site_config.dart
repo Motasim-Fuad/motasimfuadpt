@@ -22,22 +22,32 @@ class SiteConfig {
 
   static const experience = [
     SiteExperience(
-      role: 'Application Developer',
-      company: 'Sparktech Agency',
-      period: 'Current',
+      role: 'Mobile App Developer',
+      company: 'SparkTech Agency',
+      period: 'May 2025 – Present',
       points: [
-        'Shipped store apps with GetX and MVVM: HRLynx, ChatterBee, Hop Across America.',
-        'REST authentication, role-based flows, and Firebase (OTP, FCM, realtime).',
-        'In-app purchases, subscription trials, and RevenueCat purchase validation.',
+        'Production Flutter apps with MVVM and Clean Architecture: HRLynx, ChatterBee, Hop Across America.',
+        'REST auth, token handling, structured errors, FCM/APNs, and Stripe in-app payments.',
+        'RevenueCat subscriptions and entitlements; CodeMagic CI/CD to App Store and Play Store.',
       ],
     ),
     SiteExperience(
-      role: 'Mobile Application Developer',
-      company: 'Universal Technology Corporation',
-      period: 'Previous',
+      role: 'Jr Flutter Developer',
+      company: 'Fleekbd',
+      period: 'Nov 2024 – May 2025',
       points: [
-        'Shipped location features with Google Maps and careful permission handling.',
-        'Worked on client-ready UI, session handling, and app reliability.',
+        'WebSocket for real-time bidirectional data between app and server.',
+        'Cut unnecessary widget rebuilds and used Dart isolates so heavy work stays off the UI thread.',
+        'Figma to responsive Flutter UI, intl localization, and Flutter Secure Storage for encrypted local data.',
+      ],
+    ),
+    SiteExperience(
+      role: 'Flutter Intern',
+      company: 'Universal Trade',
+      period: 'Internship',
+      points: [
+        'Internship building Flutter screens and shipping location features with Google Maps.',
+        'Client-ready UI, session handling, and day-to-day app reliability.',
       ],
     ),
   ];
