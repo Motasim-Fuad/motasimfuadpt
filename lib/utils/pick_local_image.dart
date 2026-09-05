@@ -16,13 +16,13 @@ class PickedLocalImage {
 Future<PickedLocalImage?> pickLocalImage() async {
   final file = await ImagePicker().pickImage(
     source: ImageSource.gallery,
-    imageQuality: 88,
-    maxWidth: 2000,
+    imageQuality: 70,
+    maxWidth: 1200,
   );
   if (file == null) return null;
   final bytes = await file.readAsBytes();
-  if (bytes.length > 8 * 1024 * 1024) {
-    throw Exception('Image is larger than 8 MB');
+  if (bytes.length > 2 * 1024 * 1024) {
+    throw Exception('Image is still larger than 2 MB after compression. Pick a smaller photo.');
   }
   final name = file.name.toLowerCase();
   final contentType = name.endsWith('.png')

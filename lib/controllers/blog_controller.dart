@@ -13,14 +13,11 @@ class BlogController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _service.streamBlogs(publishedOnly: true).listen((list) {
-      blogs.value = list;
-      isLoading.value = false;
-    }, onError: (_) => isLoading.value = false);
-
     _service.streamBlogs(publishedOnly: false).listen((list) {
       allBlogs.value = list;
-    }, onError: (_) {});
+      blogs.value = list.where((b) => b.published).toList();
+      isLoading.value = false;
+    }, onError: (_) => isLoading.value = false);
   }
 
   Future<void> add(BlogModel blog) async {

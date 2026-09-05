@@ -9,16 +9,22 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 
-class OverviewPage extends StatelessWidget {
+class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // ডাটা রিফ্রেশ করুন
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      StatsController.to.refreshDashCounts();
-    });
+  State<OverviewPage> createState() => _OverviewPageState();
+}
 
+class _OverviewPageState extends State<OverviewPage> {
+  @override
+  void initState() {
+    super.initState();
+    StatsController.to.refreshDashCounts();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -32,7 +38,6 @@ class OverviewPage extends StatelessWidget {
           const SizedBox(height: 32),
           Obx(() {
             final counts = StatsController.to.dashCounts;
-            print('Overview counts: $counts'); // Debug
             if (counts.isEmpty) {
               return const Center(
                 child: CircularProgressIndicator(color: AppColors.cyan),
@@ -111,7 +116,7 @@ class _StatsGrid extends StatelessWidget {
         maxCrossAxisExtent: 280,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 1.6,
+        childAspectRatio: 1.9,
       ),
       itemCount: items.length,
       itemBuilder: (_, i) => _DashStatCard(stat: items[i], index: i),
@@ -140,7 +145,7 @@ class _DashStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
       decoration: BoxDecoration(
         gradient: AppColors.dashCardGradient,
         borderRadius: BorderRadius.circular(16),
@@ -148,62 +153,49 @@ class _DashStatCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                   color: stat.color.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(stat.icon, color: stat.color, size: 18),
+                child: Icon(stat.icon, color: stat.color, size: 16),
               ),
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: stat.color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(100),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  stat.trend,
+                  style: GoogleFonts.spaceGrotesk(
+                    color: stat.color,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
                   ),
-                  child: Text(
-                    stat.trend,
-                    style: GoogleFonts.spaceGrotesk(
-                      color: stat.color,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ],
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  stat.value,
-                  style: GoogleFonts.spaceGrotesk(
-                    color: AppColors.dashText,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              Text(
-                stat.label,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-            ],
+          const Spacer(),
+          Text(
+            stat.value,
+            style: GoogleFonts.spaceGrotesk(
+              color: AppColors.dashText,
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            stat.label,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ],
       ),

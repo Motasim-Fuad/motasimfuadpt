@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -95,15 +97,11 @@ class FirebaseService {
       query = query.orderBy('publishedAt', descending: true);
 
       return query.snapshots().map((s) {
-        final blogs = s.docs.map(BlogModel.fromFirestore).toList();
-        print('✅ Blogs fetched: ${blogs.length} blogs');
-        return blogs;
+        return s.docs.map(BlogModel.fromFirestore).toList();
       }).handleError((error) {
-        print('❌ Blogs stream error: $error');
         return <BlogModel>[];
       });
     } catch (e) {
-      print('❌ Blogs stream exception: $e');
       return Stream.value([]);
     }
   }
@@ -188,11 +186,20 @@ class FirebaseService {
     required String storagePath,
     String contentType = 'image/jpeg',
   }) async {
-    final ref = FirebaseStorage.instance.ref(storagePath);
-    await ref.putData(
-      bytes,
-      SettableMetadata(contentType: contentType),
-    );
+    final storage = FirebaseStorage.instance;
+    storage.setMaxUploadRetryTime(const Duration(seconds: 20));
+    storage.setMaxOperationRetryTime(const Duration(seconds: 20));
+    final ref = storage.ref(storagePath);
+    try {
+      await ref
+          .putData(bytes, SettableMetadata(contentType: contentType))
+          .timeout(const Duration(seconds: 45));
+    } on TimeoutException {
+      throw Exception(
+        'Upload timed out. Chrome localhost uploads need Storage CORS. '
+        'Run: gsutil cors set cors.json gs://motasimfuadpt.firebasestorage.app',
+      );
+    }
     return ref.getDownloadURL();
   }
 

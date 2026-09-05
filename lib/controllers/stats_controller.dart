@@ -21,9 +21,7 @@ class StatsController extends GetxController {
     _service.streamStats().listen((s) {
       stats.value = s;
       isLoading.value = false;
-      print('Stats updated: ${s.projectsCompleted} projects');
-    }, onError: (e) {
-      print('Stats stream error: $e');
+    }, onError: (_) {
       isLoading.value = false;
     });
     refreshDashCounts();
@@ -31,12 +29,9 @@ class StatsController extends GetxController {
 
   Future<void> refreshDashCounts() async {
     try {
-      print('Refreshing dashboard counts...');
       final counts = await _service.getDashboardCounts();
-      print('Dashboard counts received: $counts');
       dashCounts.value = counts;
     } catch (e) {
-      print('Dashboard counts error: $e');
       // Fallback data
       dashCounts.value = {
         'projects': 0,
