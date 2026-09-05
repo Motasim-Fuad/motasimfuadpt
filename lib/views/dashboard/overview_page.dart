@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_portfolio/controllers/contact_controller.dart';
+import 'package:flutter_portfolio/controllers/profile_controller.dart';
 import 'package:flutter_portfolio/controllers/skill_controller.dart';
 import 'package:flutter_portfolio/controllers/stats_controller.dart';
+import 'package:flutter_portfolio/utils/remote_image.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
@@ -25,6 +27,8 @@ class OverviewPage extends StatelessWidget {
           Text('Dashboard Overview', style: Theme.of(context).textTheme.headlineLarge),
           const SizedBox(height: 6),
           Text('Welcome back, Admin!', style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(height: 24),
+          const _ProfilePhotoCard(),
           const SizedBox(height: 32),
           Obx(() {
             final counts = StatsController.to.dashCounts;
@@ -138,7 +142,7 @@ class _DashStatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
+        gradient: AppColors.dashCardGradient,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: stat.color.withOpacity(0.2)),
       ),
@@ -187,7 +191,7 @@ class _DashStatCard extends StatelessWidget {
                 child: Text(
                   stat.value,
                   style: GoogleFonts.spaceGrotesk(
-                    color: AppColors.textPrimary,
+                    color: AppColors.dashText,
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
                   ),
@@ -213,9 +217,9 @@ class _SkillsChart extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
+        gradient: AppColors.dashCardGradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.dashBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,7 +235,7 @@ class _SkillsChart extends StatelessWidget {
                 height: 200,
                 child: Center(
                   child: Text('No skills added yet',
-                      style: TextStyle(color: AppColors.textMuted)),
+                      style: TextStyle(color: AppColors.dashMuted)),
                 ),
               );
             }
@@ -248,7 +252,7 @@ class _SkillsChart extends StatelessWidget {
                     children: [
                       Text(skills[i].name,
                           style: GoogleFonts.spaceGrotesk(
-                              color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+                              color: AppColors.dashText, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
                       Expanded(
                         child: Align(
@@ -288,9 +292,9 @@ class _RecentMessages extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
+        gradient: AppColors.dashCardGradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.dashBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,7 +311,7 @@ class _RecentMessages extends StatelessWidget {
                 padding: EdgeInsets.all(20),
                 child: Center(
                   child: Text('No messages yet',
-                      style: TextStyle(color: AppColors.textMuted)),
+                      style: TextStyle(color: AppColors.dashMuted)),
                 ),
               );
             }
@@ -315,7 +319,7 @@ class _RecentMessages extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: contacts.length,
-              separatorBuilder: (_, __) => const Divider(color: AppColors.border, height: 1),
+              separatorBuilder: (_, __) => const Divider(color: AppColors.dashBorder, height: 1),
               itemBuilder: (_, i) {
                 final c = contacts[i];
                 return ListTile(
@@ -330,14 +334,14 @@ class _RecentMessages extends StatelessWidget {
                   title: Text(
                     c.name,
                     style: GoogleFonts.spaceGrotesk(
-                      color: AppColors.textPrimary,
+                      color: AppColors.dashText,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
                   ),
                   subtitle: Text(
                     c.subject,
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                    style: const TextStyle(color: AppColors.dashMuted, fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -355,5 +359,84 @@ class _RecentMessages extends StatelessWidget {
         ],
       ),
     ).animate(delay: 200.ms).fadeIn(duration: 600.ms).slideY(begin: 0.2, end: 0);
+  }
+}
+
+class _ProfilePhotoCard extends StatelessWidget {
+  const _ProfilePhotoCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: AppColors.dashCardGradient,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.dashBorder),
+      ),
+      child: Obx(() {
+        final url = ProfileController.to.imageUrl.value;
+        final uploading = ProfileController.to.uploading.value;
+        final err = ProfileController.to.error.value;
+        return Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                width: 88,
+                height: 110,
+                child: uploading
+                    ? const Center(
+                        child: CircularProgressIndicator(color: AppColors.cyan),
+                      )
+                    : url.isNotEmpty
+                        ? RemoteImage(
+                            url: url,
+                            placeholder: (_) => Image.asset(
+                              'assets/profile_picture.jpeg',
+                              fit: BoxFit.cover,
+                            ),
+                            error: (_) => Image.asset(
+                              'assets/profile_picture.jpeg',
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Image.asset(
+                            'assets/profile_picture.jpeg',
+                            fit: BoxFit.cover,
+                          ),
+              ),
+            ),
+            const SizedBox(width: 18),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your photo',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: 18),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Upload from this computer. It replaces the hero image on the public site.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  if (err != null) ...[
+                    const SizedBox(height: 8),
+                    Text(err, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+                  ],
+                  const SizedBox(height: 14),
+                  OutlinedButton.icon(
+                    onPressed: uploading ? null : () => ProfileController.to.uploadFromDevice(),
+                    icon: const Icon(Icons.upload_rounded, size: 18),
+                    label: Text(uploading ? 'Uploading...' : 'Upload from device'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      }),
+    );
   }
 }

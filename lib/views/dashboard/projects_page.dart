@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_portfolio/controllers/project_controller.dart';
 import 'package:flutter_portfolio/models/model.dart';
+import 'package:flutter_portfolio/services/firebase_services.dart';
 import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:flutter_portfolio/utils/pick_local_image.dart';
+import 'package:flutter_portfolio/utils/remote_image.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -78,7 +81,7 @@ class ProjectsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.card,
+        backgroundColor: AppColors.dashCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Delete Project', style: Theme.of(dialogContext).textTheme.headlineMedium),
         content: Text(
@@ -87,7 +90,7 @@ class ProjectsPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.dashMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -121,9 +124,9 @@ class _ProjectTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
+        gradient: AppColors.dashCardGradient,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.dashBorder),
       ),
       child: Row(
         children: [
@@ -131,21 +134,26 @@ class _ProjectTile extends StatelessWidget {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: AppColors.dashSurface,
               borderRadius: BorderRadius.circular(10),
             ),
             child: project.imageUrl.isNotEmpty
                 ? ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.network(project.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(
-                      Icons.phone_android_rounded,
-                      color: AppColors.textMuted,
-                      size: 24)),
+              child: RemoteImage(
+                url: project.imageUrl,
+                placeholder: (_) => const Icon(
+                    Icons.phone_android_rounded,
+                    color: AppColors.dashMuted,
+                    size: 24),
+                error: (_) => const Icon(
+                    Icons.phone_android_rounded,
+                    color: AppColors.dashMuted,
+                    size: 24),
+              ),
             )
                 : const Icon(Icons.phone_android_rounded,
-                color: AppColors.textMuted, size: 24),
+                color: AppColors.dashMuted, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -158,7 +166,7 @@ class _ProjectTile extends StatelessWidget {
                       child: Text(
                         project.title,
                         style: GoogleFonts.spaceGrotesk(
-                          color: AppColors.textPrimary,
+                          color: AppColors.dashText,
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
                         ),
@@ -192,7 +200,7 @@ class _ProjectTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 13),
+                      color: AppColors.dashMuted, fontSize: 13),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -203,14 +211,14 @@ class _ProjectTile extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: AppColors.dashSurface,
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: AppColors.dashBorder),
                     ),
                     child: Text(
                       t,
                       style: GoogleFonts.jetBrainsMono(
-                          color: AppColors.textMuted, fontSize: 10),
+                          color: AppColors.dashMuted, fontSize: 10),
                     ),
                   ))
                       .toList(),
@@ -267,12 +275,17 @@ class _ProjectDialogState extends State<_ProjectDialog> {
       text: widget.project?.technologies.join(', '));
   late final _ghCtrl =
   TextEditingController(text: widget.project?.githubUrl);
+  late final _appStoreCtrl =
+  TextEditingController(text: widget.project?.appStoreUrl);
+  late final _playStoreCtrl =
+  TextEditingController(text: widget.project?.playStoreUrl);
   late final _liveCtrl =
   TextEditingController(text: widget.project?.liveUrl);
   late final _orderCtrl = TextEditingController(
       text: (widget.project?.order ?? 0).toString());
   late bool _featured = widget.project?.featured ?? false;
   bool _loading = false;
+  PickedLocalImage? _picked;
 
   @override
   void dispose() {
@@ -282,6 +295,8 @@ class _ProjectDialogState extends State<_ProjectDialog> {
       _imgCtrl,
       _techCtrl,
       _ghCtrl,
+      _appStoreCtrl,
+      _playStoreCtrl,
       _liveCtrl,
       _orderCtrl
     ]) {
@@ -294,20 +309,56 @@ class _ProjectDialogState extends State<_ProjectDialog> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
+    try {
     final techs = _techCtrl.text
         .split(',')
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
         .toList();
 
+    var github = _ghCtrl.text.trim();
+    var live = _liveCtrl.text.trim();
+    var appStore = _appStoreCtrl.text.trim();
+    var playStore = _playStoreCtrl.text.trim();
+
+    if (appStore.isEmpty && ProjectModel.looksLikeAppStore(github)) {
+      appStore = github;
+      github = '';
+    }
+    if (playStore.isEmpty && ProjectModel.looksLikePlayStore(github)) {
+      playStore = github;
+      github = '';
+    }
+    if (playStore.isEmpty && ProjectModel.looksLikePlayStore(live)) {
+      playStore = live;
+      live = '';
+    }
+    if (appStore.isEmpty && ProjectModel.looksLikeAppStore(live)) {
+      appStore = live;
+      live = '';
+    }
+
+    var imageUrl = resolveImageUrl(_imgCtrl.text);
+    if (_picked != null) {
+      final ext = storageExtFor(_picked!.contentType);
+      imageUrl = await FirebaseService().uploadImageBytes(
+        bytes: _picked!.bytes,
+        storagePath:
+            'projects/${DateTime.now().millisecondsSinceEpoch}.$ext',
+        contentType: _picked!.contentType,
+      );
+    }
+
     final project = ProjectModel(
       id: widget.project?.id ?? '',
       title: _titleCtrl.text.trim(),
       description: _descCtrl.text.trim(),
-      imageUrl: _imgCtrl.text.trim(),
+      imageUrl: imageUrl,
       technologies: techs,
-      githubUrl: _ghCtrl.text.trim(),
-      liveUrl: _liveCtrl.text.trim(),
+      githubUrl: github,
+      liveUrl: live,
+      appStoreUrl: appStore,
+      playStoreUrl: playStore,
       featured: _featured,
       order: int.tryParse(_orderCtrl.text) ?? 0,
       createdAt: widget.project?.createdAt ?? DateTime.now(),
@@ -320,17 +371,25 @@ class _ProjectDialogState extends State<_ProjectDialog> {
     }
 
     setState(() => _loading = false);
-    Navigator.pop(context);
+    if (mounted) Navigator.pop(context);
+    } catch (e) {
+      setState(() => _loading = false);
+      Get.snackbar(
+        'Could not save',
+        '$e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.card,
+      backgroundColor: AppColors.dashCard,
       shape:
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 560, maxHeight: 700),
+        constraints: const BoxConstraints(maxWidth: 560, maxHeight: 760),
         child: Column(
           children: [
             Padding(
@@ -345,12 +404,12 @@ class _ProjectDialogState extends State<_ProjectDialog> {
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close_rounded,
-                        color: AppColors.textSecondary),
+                        color: AppColors.dashMuted),
                   ),
                 ],
               ),
             ),
-            const Divider(color: AppColors.border, height: 1),
+            const Divider(color: AppColors.dashBorder, height: 1),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
@@ -362,17 +421,83 @@ class _ProjectDialogState extends State<_ProjectDialog> {
                       const SizedBox(height: 16),
                       _field('Description *', _descCtrl, maxLines: 3),
                       const SizedBox(height: 16),
-                      _field('Image URL', _imgCtrl),
+                      _field(
+                        'Image URL (optional if you upload a file)',
+                        _imgCtrl,
+                        hint: 'Or paste a direct image link',
+                      ),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: OutlinedButton.icon(
+                          onPressed: _loading
+                              ? null
+                              : () async {
+                                  try {
+                                    final picked = await pickLocalImage();
+                                    if (picked == null) return;
+                                    setState(() => _picked = picked);
+                                  } catch (e) {
+                                    Get.snackbar(
+                                      'Image',
+                                      e.toString(),
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                  }
+                                },
+                          icon: const Icon(Icons.upload_rounded, size: 18),
+                          label: Text(_picked == null
+                              ? 'Upload from device'
+                              : 'File selected: ${_picked!.name}'),
+                        ),
+                      ),
+                      if (_picked != null) ...[
+                        const SizedBox(height: 12),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.memory(
+                            _picked!.bytes,
+                            height: 120,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ] else if (_imgCtrl.text.trim().isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 120,
+                          width: double.infinity,
+                          child: RemoteImage(
+                            url: _imgCtrl.text,
+                            placeholder: (_) => const SizedBox(),
+                            error: (_) => const Center(
+                              child: Text('Preview failed'),
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       _field('Technologies (comma-separated)', _techCtrl,
                           hint: 'Flutter, Firebase, Dart'),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(child: _field('GitHub URL', _ghCtrl)),
-                          const SizedBox(width: 12),
-                          Expanded(child: _field('Live URL', _liveCtrl)),
-                        ],
+                      _field(
+                        'App Store URL',
+                        _appStoreCtrl,
+                        hint: 'https://apps.apple.com/app/...',
+                      ),
+                      const SizedBox(height: 16),
+                      _field(
+                        'Play Store URL',
+                        _playStoreCtrl,
+                        hint: 'https://play.google.com/store/apps/details?id=...',
+                      ),
+                      const SizedBox(height: 16),
+                      _field('GitHub URL', _ghCtrl, hint: 'https://github.com/...'),
+                      const SizedBox(height: 16),
+                      _field(
+                        'Website / other live URL',
+                        _liveCtrl,
+                        hint: 'Optional web demo',
                       ),
                       const SizedBox(height: 16),
                       _field('Display Order', _orderCtrl,
@@ -398,7 +523,7 @@ class _ProjectDialogState extends State<_ProjectDialog> {
                 ),
               ),
             ),
-            const Divider(color: AppColors.border, height: 1),
+            const Divider(color: AppColors.dashBorder, height: 1),
             Padding(
               padding: const EdgeInsets.all(20),
               child: Row(
@@ -460,7 +585,7 @@ class _EmptyProjectsState extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.phone_android_rounded,
-              size: 80, color: AppColors.textMuted),
+              size: 80, color: AppColors.dashMuted),
           const SizedBox(height: 20),
           Text('No projects yet',
               style: Theme.of(context).textTheme.headlineMedium),

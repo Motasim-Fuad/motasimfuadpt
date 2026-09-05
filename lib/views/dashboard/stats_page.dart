@@ -70,12 +70,6 @@ class _StatsGrid extends StatelessWidget {
         icon: Icons.sentiment_satisfied_rounded,
         color: AppColors.green,
       ),
-      _StatPreview(
-        value: '${stats.githubStars}+',
-        label: 'GitHub Stars',
-        icon: Icons.star_rounded,
-        color: const Color(0xFFFFB800),
-      ),
     ];
 
     return Column(
@@ -84,7 +78,7 @@ class _StatsGrid extends StatelessWidget {
         Text(
           'Live Preview',
           style: GoogleFonts.spaceGrotesk(
-            color: AppColors.textSecondary,
+            color: AppColors.dashMuted,
             fontSize: 13,
             fontWeight: FontWeight.w600,
             letterSpacing: 1,
@@ -130,7 +124,7 @@ class _StatPreviewCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
+        gradient: AppColors.dashCardGradient,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: stat.color.withOpacity(0.2)),
       ),
@@ -194,18 +188,27 @@ class _EditStatsCardState extends State<_EditStatsCard> {
       text: widget.stats.yearsExperience.toString());
   late final _clientsCtrl = TextEditingController(
       text: widget.stats.happyClients.toString());
-  late final _starsCtrl = TextEditingController(
-      text: widget.stats.githubStars.toString());
 
   bool _loading = false;
   bool _saved = false;
+
+  @override
+  void didUpdateWidget(covariant _EditStatsCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.stats.projectsCompleted != widget.stats.projectsCompleted ||
+        oldWidget.stats.yearsExperience != widget.stats.yearsExperience ||
+        oldWidget.stats.happyClients != widget.stats.happyClients) {
+      _projectsCtrl.text = widget.stats.projectsCompleted.toString();
+      _yearsCtrl.text = widget.stats.yearsExperience.toString();
+      _clientsCtrl.text = widget.stats.happyClients.toString();
+    }
+  }
 
   @override
   void dispose() {
     _projectsCtrl.dispose();
     _yearsCtrl.dispose();
     _clientsCtrl.dispose();
-    _starsCtrl.dispose();
     super.dispose();
   }
 
@@ -213,9 +216,8 @@ class _EditStatsCardState extends State<_EditStatsCard> {
     final projects = int.tryParse(_projectsCtrl.text);
     final years = int.tryParse(_yearsCtrl.text);
     final clients = int.tryParse(_clientsCtrl.text);
-    final stars = int.tryParse(_starsCtrl.text);
 
-    if ([projects, years, clients, stars].any((v) => v == null)) {
+    if ([projects, years, clients].any((v) => v == null)) {
       Get.snackbar(
         'Error',
         'All fields must be valid numbers',
@@ -231,7 +233,7 @@ class _EditStatsCardState extends State<_EditStatsCard> {
       projectsCompleted: projects!,
       yearsExperience: years!,
       happyClients: clients!,
-      githubStars: stars!,
+      githubStars: widget.stats.githubStars,
     ));
     setState(() {
       _loading = false;
@@ -308,15 +310,6 @@ class _EditStatsCardState extends State<_EditStatsCard> {
                   _clientsCtrl,
                   Icons.sentiment_satisfied_rounded,
                   AppColors.green,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _numField(
-                  'GitHub Stars',
-                  _starsCtrl,
-                  Icons.star_rounded,
-                  const Color(0xFFFFB800),
                 ),
               ),
             ],

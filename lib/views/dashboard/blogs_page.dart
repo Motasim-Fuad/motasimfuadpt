@@ -17,7 +17,10 @@ class BlogsPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,7 +31,6 @@ class BlogsPage extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodyMedium),
                 ],
               ),
-              const Spacer(),
               ElevatedButton.icon(
                 onPressed: () => _showBlogDialog(context),
                 icon: const Icon(Icons.add_rounded, size: 18),
@@ -79,7 +81,7 @@ class BlogsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(  // আলাদা context নাম দিন
-        backgroundColor: AppColors.card,
+        backgroundColor: AppColors.dashCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Delete Blog', style: Theme.of(dialogContext).textTheme.headlineMedium),
         content: Text('Delete "${blog.title}"? This cannot be undone.',
@@ -87,7 +89,7 @@ class BlogsPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.dashMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -121,11 +123,11 @@ class _BlogTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
+        gradient: AppColors.dashCardGradient,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: blog.published
-              ? AppColors.border
+              ? AppColors.dashBorder
               : Colors.orange.withOpacity(0.3),
         ),
       ),
@@ -135,7 +137,7 @@ class _BlogTile extends StatelessWidget {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: AppColors.dashSurface,
               borderRadius: BorderRadius.circular(10),
             ),
             child: blog.imageUrl.isNotEmpty
@@ -145,11 +147,11 @@ class _BlogTile extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => const Icon(
                       Icons.article_rounded,
-                      color: AppColors.textMuted,
+                      color: AppColors.dashMuted,
                       size: 24)),
             )
                 : const Icon(Icons.article_rounded,
-                color: AppColors.textMuted, size: 24),
+                color: AppColors.dashMuted, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -162,7 +164,7 @@ class _BlogTile extends StatelessWidget {
                       child: Text(
                         blog.title,
                         style: GoogleFonts.spaceGrotesk(
-                          color: AppColors.textPrimary,
+                          color: AppColors.dashText,
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
                         ),
@@ -198,19 +200,19 @@ class _BlogTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 13),
+                      color: AppColors.dashMuted, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
                     const Icon(Icons.schedule_rounded,
-                        size: 12, color: AppColors.textMuted),
+                        size: 12, color: AppColors.dashMuted),
                     const SizedBox(width: 4),
                     Text(
                       '${blog.readTimeMinutes} min read  •  '
                           '${DateFormat('MMM dd, yyyy').format(blog.publishedAt)}',
                       style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 11),
+                          color: AppColors.dashMuted, fontSize: 11),
                     ),
                   ],
                 ),
@@ -321,7 +323,7 @@ class _BlogDialogState extends State<_BlogDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.card,
+      backgroundColor: AppColors.dashCard,
       shape:
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
@@ -340,12 +342,12 @@ class _BlogDialogState extends State<_BlogDialog> {
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close_rounded,
-                        color: AppColors.textSecondary),
+                        color: AppColors.dashMuted),
                   ),
                 ],
               ),
             ),
-            const Divider(color: AppColors.border, height: 1),
+            const Divider(color: AppColors.dashBorder, height: 1),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
@@ -402,7 +404,7 @@ class _BlogDialogState extends State<_BlogDialog> {
                 ),
               ),
             ),
-            const Divider(color: AppColors.border, height: 1),
+            const Divider(color: AppColors.dashBorder, height: 1),
             Padding(
               padding: const EdgeInsets.all(20),
               child: Row(
@@ -463,7 +465,7 @@ class _EmptyBlogsState extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.article_rounded,
-              size: 80, color: AppColors.textMuted),
+              size: 80, color: AppColors.dashMuted),
           const SizedBox(height: 20),
           Text('No blogs yet',
               style: Theme.of(context).textTheme.headlineMedium),

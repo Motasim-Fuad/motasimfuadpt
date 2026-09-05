@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_portfolio/controllers/contact_controller.dart';
 import 'package:flutter_portfolio/models/model.dart';
 import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:flutter_portfolio/utils/open_link.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -86,14 +87,14 @@ class _MessageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ExpansionTile(
-      backgroundColor: AppColors.card,
-      collapsedBackgroundColor: AppColors.card,
+      backgroundColor: AppColors.dashCard,
+      collapsedBackgroundColor: AppColors.dashCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
           color: !contact.read
               ? AppColors.cyan.withOpacity(0.3)
-              : AppColors.border,
+              : AppColors.dashBorder,
         ),
       ),
       collapsedShape: RoundedRectangleBorder(
@@ -101,7 +102,7 @@ class _MessageCard extends StatelessWidget {
         side: BorderSide(
           color: !contact.read
               ? AppColors.cyan.withOpacity(0.3)
-              : AppColors.border,
+              : AppColors.dashBorder,
         ),
       ),
       onExpansionChanged: (expanded) {
@@ -129,7 +130,7 @@ class _MessageCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.cyan,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.card, width: 1.5),
+                  border: Border.all(color: AppColors.dashCard, width: 1.5),
                 ),
               ),
             ),
@@ -138,14 +139,14 @@ class _MessageCard extends StatelessWidget {
       title: Text(
         contact.name,
         style: GoogleFonts.spaceGrotesk(
-          color: AppColors.textPrimary,
+          color: AppColors.dashText,
           fontWeight: FontWeight.w600,
           fontSize: 15,
         ),
       ),
       subtitle: Text(
         contact.subject,
-        style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+        style: const TextStyle(color: AppColors.dashMuted, fontSize: 13),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -156,7 +157,7 @@ class _MessageCard extends StatelessWidget {
           Text(
             DateFormat('MMM dd').format(contact.sentAt),
             style: GoogleFonts.spaceGrotesk(
-                color: AppColors.textMuted, fontSize: 11),
+                color: AppColors.dashMuted, fontSize: 11),
           ),
           const SizedBox(height: 4),
           Icon(
@@ -164,7 +165,7 @@ class _MessageCard extends StatelessWidget {
                 ? Icons.mark_email_unread_rounded
                 : Icons.mark_email_read_rounded,
             size: 14,
-            color: !contact.read ? AppColors.cyan : AppColors.textMuted,
+            color: !contact.read ? AppColors.cyan : AppColors.dashMuted,
           ),
         ],
       ),
@@ -172,19 +173,19 @@ class _MessageCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           decoration: const BoxDecoration(
-            color: AppColors.card,
+            color: AppColors.dashCard,
             borderRadius:
             BorderRadius.vertical(bottom: Radius.circular(14)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Divider(color: AppColors.border),
+              const Divider(color: AppColors.dashBorder),
               const SizedBox(height: 8),
               Row(
                 children: [
                   const Icon(Icons.mail_outline_rounded,
-                      size: 14, color: AppColors.textMuted),
+                      size: 14, color: AppColors.dashMuted),
                   const SizedBox(width: 6),
                   Text(
                     contact.email,
@@ -195,7 +196,7 @@ class _MessageCard extends StatelessWidget {
                   Text(
                     DateFormat('MMM dd, yyyy  HH:mm').format(contact.sentAt),
                     style: const TextStyle(
-                        color: AppColors.textMuted, fontSize: 11),
+                        color: AppColors.dashMuted, fontSize: 11),
                   ),
                 ],
               ),
@@ -204,9 +205,9 @@ class _MessageCard extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: AppColors.dashSurface,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: AppColors.dashBorder),
                 ),
                 child: Text(
                   contact.message,
@@ -220,6 +221,14 @@ class _MessageCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  TextButton.icon(
+                    onPressed: () => openUrl(
+                      'mailto:${contact.email}?subject=${Uri.encodeComponent('Re: ${contact.subject}')}',
+                    ),
+                    icon: const Icon(Icons.reply_rounded, size: 16, color: AppColors.cyan),
+                    label: const Text('Reply',
+                        style: TextStyle(color: AppColors.cyan)),
+                  ),
                   TextButton.icon(
                     onPressed: () =>
                         ContactController.to.delete(contact.id),
@@ -250,7 +259,7 @@ class _EmptyMessages extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.inbox_rounded, size: 80, color: AppColors.textMuted),
+          const Icon(Icons.inbox_rounded, size: 80, color: AppColors.dashMuted),
           const SizedBox(height: 20),
           Text('No messages yet',
               style: Theme.of(context).textTheme.headlineMedium),

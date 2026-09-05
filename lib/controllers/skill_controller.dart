@@ -8,6 +8,8 @@ class SkillController extends GetxController {
   final _service = FirebaseService();
   final skills = <SkillModel>[].obs;
   final isLoading = true.obs;
+  var _busy = false;
+  var _deduped = false;
 
   @override
   void onInit() {
@@ -28,6 +30,46 @@ class SkillController extends GetxController {
 
   Future<void> delete(String id) async {
     await _service.deleteSkill(id);
+  }
+
+  Future<void> _waitUntilLoaded() async {
+    if (!isLoading.value) return;
+    await isLoading.stream.firstWhere((loading) => !loading).timeout(
+          const Duration(seconds: 12),
+          onTimeout: () => false,
+        );
+  }
+
+  /// Deletes extra Firestore docs that share the same skill name.
+  Future<int> removeDuplicateNames() async {
+    if (_busy) return 0;
+    _busy = true;
+    try {
+      await _waitUntilLoaded();
+      final seen = <String>{};
+      final extras = <SkillModel>[];
+      for (final skill in skills) {
+        final key = skill.name.trim().toLowerCase();
+        if (key.isEmpty) continue;
+        if (seen.contains(key)) {
+          extras.add(skill);
+        } else {
+          seen.add(key);
+        }
+      }
+      for (final skill in extras) {
+        await delete(skill.id);
+      }
+      _deduped = true;
+      return extras.length;
+    } finally {
+      _busy = false;
+    }
+  }
+
+  Future<void> cleanupDuplicatesOnce() async {
+    if (_deduped) return;
+    await removeDuplicateNames();
   }
 
   Map<String, List<SkillModel>> get byCategory {

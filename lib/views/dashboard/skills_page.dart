@@ -78,7 +78,7 @@ class SkillsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.card,
+        backgroundColor: AppColors.dashCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Delete Skill', style: Theme.of(dialogContext).textTheme.headlineMedium),
         content: Text(
@@ -87,7 +87,7 @@ class SkillsPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.dashMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -121,9 +121,9 @@ class _SkillTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
+        gradient: AppColors.dashCardGradient,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.dashBorder),
       ),
       child: Row(
         children: [
@@ -154,7 +154,7 @@ class _SkillTile extends StatelessWidget {
                 Text(
                   skill.name,
                   style: GoogleFonts.spaceGrotesk(
-                    color: AppColors.textPrimary,
+                    color: AppColors.dashText,
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
@@ -185,7 +185,7 @@ class _SkillTile extends StatelessWidget {
                 Container(
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.border,
+                    color: AppColors.dashBorder,
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: LayoutBuilder(
@@ -258,7 +258,11 @@ class _SkillDialogState extends State<_SkillDialog> {
     'Mobile',
     'Language',
     'Framework',
+    'Architecture',
+    'Learning',
     'Backend',
+    'Product',
+    'Quality',
     'Tools',
     'Database',
     'Other'
@@ -295,7 +299,7 @@ class _SkillDialogState extends State<_SkillDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.card,
+      backgroundColor: AppColors.dashCard,
       shape:
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
@@ -315,12 +319,12 @@ class _SkillDialogState extends State<_SkillDialog> {
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close_rounded,
-                        color: AppColors.textSecondary),
+                        color: AppColors.dashMuted),
                   ),
                 ],
               ),
             ),
-            const Divider(color: AppColors.border, height: 1),
+            const Divider(color: AppColors.dashBorder, height: 1),
             Padding(
               padding: const EdgeInsets.all(24),
               child: Form(
@@ -338,18 +342,27 @@ class _SkillDialogState extends State<_SkillDialog> {
                     const SizedBox(height: 16),
                     // Category dropdown
                     DropdownButtonFormField<String>(
-                      value: _categories.contains(_categoryCtrl.text)
+                      value: [
+                        ..._categories,
+                        if (widget.skill != null) widget.skill!.category,
+                      ].contains(_categoryCtrl.text) &&
+                              _categoryCtrl.text.isNotEmpty
                           ? _categoryCtrl.text
                           : null,
-                      dropdownColor: AppColors.surface,
+                      dropdownColor: AppColors.dashSurface,
                       decoration: const InputDecoration(labelText: 'Category *'),
-                      items: _categories
+                      items: {
+                        ..._categories,
+                        if (widget.skill != null &&
+                            widget.skill!.category.isNotEmpty)
+                          widget.skill!.category,
+                      }
                           .map((c) => DropdownMenuItem(
-                        value: c,
-                        child: Text(c,
-                            style: const TextStyle(
-                                color: AppColors.textPrimary)),
-                      ))
+                                value: c,
+                                child: Text(c,
+                                    style: const TextStyle(
+                                        color: AppColors.dashText)),
+                              ))
                           .toList(),
                       onChanged: (v) {
                         if (v != null) _categoryCtrl.text = v;
@@ -363,7 +376,7 @@ class _SkillDialogState extends State<_SkillDialog> {
                       children: [
                         Text('Proficiency',
                             style: GoogleFonts.spaceGrotesk(
-                                color: AppColors.textPrimary,
+                                color: AppColors.dashText,
                                 fontWeight: FontWeight.w600)),
                         Text(
                           '${_proficiency.round()}%',
@@ -381,7 +394,7 @@ class _SkillDialogState extends State<_SkillDialog> {
                         max: 100,
                         divisions: 18,
                         activeColor: AppColors.cyan,
-                        inactiveColor: AppColors.border,
+                        inactiveColor: AppColors.dashBorder,
                         onChanged: (v) {
                           setSliderState(() => _proficiency = v);
                           setState(() => _proficiency = v);
@@ -392,7 +405,7 @@ class _SkillDialogState extends State<_SkillDialog> {
                 ),
               ),
             ),
-            const Divider(color: AppColors.border, height: 1),
+            const Divider(color: AppColors.dashBorder, height: 1),
             Padding(
               padding: const EdgeInsets.all(20),
               child: Row(
@@ -438,7 +451,7 @@ class _EmptySkillsState extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.code_rounded,
-              size: 80, color: AppColors.textMuted),
+              size: 80, color: AppColors.dashMuted),
           const SizedBox(height: 20),
           Text('No skills yet',
               style: Theme.of(context).textTheme.headlineMedium),

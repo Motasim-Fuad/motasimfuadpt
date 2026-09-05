@@ -1,10 +1,12 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_portfolio/data/site_config.dart';
 import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:flutter_portfolio/utils/open_link.dart';
+import 'package:flutter_portfolio/utils/remote_image.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../models/model.dart';
 
 class GradientText extends StatelessWidget {
@@ -13,20 +15,19 @@ class GradientText extends StatelessWidget {
   final Gradient gradient;
 
   const GradientText(
-      this.text, {
-        super.key,
-        this.style,
-        this.gradient = AppColors.accentGradient,
-      });
+    this.text, {
+    super.key,
+    this.style,
+    this.gradient = AppColors.accentGradient,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ShaderMask(
-      blendMode: BlendMode.srcIn,
-      shaderCallback: (bounds) => gradient.createShader(
-        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+    return Text(
+      text,
+      style: (style ?? const TextStyle()).copyWith(
+        color: Theme.of(context).colorScheme.onSurface,
       ),
-      child: Text(text, style: style),
     );
   }
 }
@@ -35,51 +36,51 @@ class SectionHeader extends StatelessWidget {
   final String label;
   final String title;
   final String? subtitle;
+  final bool alignStart;
 
   const SectionHeader({
     super.key,
     required this.label,
     required this.title,
     this.subtitle,
+    this.alignStart = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final align = alignStart ? CrossAxisAlignment.start : CrossAxisAlignment.center;
+    final textAlign = alignStart ? TextAlign.start : TextAlign.center;
     return Column(
+      crossAxisAlignment: align,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.cyanDim,
-            borderRadius: BorderRadius.circular(100),
-            border: Border.all(color: AppColors.cyan.withOpacity(0.3)),
-          ),
-          child: Text(
-            label.toUpperCase(),
-            style: GoogleFonts.spaceGrotesk(
-              color: AppColors.cyan,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 2,
-            ),
+        Text(
+          label,
+          style: GoogleFonts.ibmPlexMono(
+            color: AppColors.rust,
+            fontSize: 12,
+            letterSpacing: 2.2,
+            fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 16),
-        GradientText(
+        const SizedBox(height: 12),
+        Text(
           title,
+          textAlign: textAlign,
           style: Theme.of(context).textTheme.displaySmall,
-          gradient: AppColors.accentGradient,
         ),
         if (subtitle != null) ...[
           const SizedBox(height: 12),
-          Text(
-            subtitle!,
-            style: Theme.of(context).textTheme.bodyLarge,
-            textAlign: TextAlign.center,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Text(
+              subtitle!,
+              style: Theme.of(context).textTheme.bodyLarge,
+              textAlign: textAlign,
+            ),
           ),
         ],
       ],
-    ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2, end: 0);
+    ).animate().fadeIn(duration: 500.ms);
   }
 }
 
@@ -92,26 +93,20 @@ class GlowCard extends StatelessWidget {
   const GlowCard({
     super.key,
     required this.child,
-    this.glowColor = AppColors.cyan,
+    this.glowColor = AppColors.rust,
     this.padding,
     this.borderRadius,
   });
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: padding ?? const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
-        borderRadius: borderRadius ?? BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: glowColor.withOpacity(0.06),
-            blurRadius: 30,
-            spreadRadius: 0,
-          ),
-        ],
+        color: dark ? AppColors.dashCard : AppColors.card,
+        borderRadius: borderRadius ?? BorderRadius.circular(4),
+        border: Border.all(color: dark ? AppColors.dashBorder : AppColors.border),
       ),
       child: child,
     );
@@ -131,126 +126,101 @@ class ProjectCard extends StatefulWidget {
 class _ProjectCardState extends State<ProjectCard> {
   bool _hovered = false;
 
-  void _launch(String url) async {
-    if (url.isEmpty) return;
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
-  }
-
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 220),
         decoration: BoxDecoration(
-          gradient: AppColors.cardGradient,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: _hovered ? AppColors.cyan.withOpacity(0.5) : AppColors.border,
-          ),
-          boxShadow: _hovered
-              ? [BoxShadow(color: AppColors.cyan.withOpacity(0.1), blurRadius: 30, spreadRadius: 2)]
-              : [],
+          color: _hovered ? AppColors.cardHover : AppColors.card,
+          border: Border.all(color: AppColors.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              child: SizedBox(
-                height: 180,
-                width: double.infinity,
-                child: widget.project.imageUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                  imageUrl: widget.project.imageUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (_, __) => Container(color: AppColors.surface),
-                  errorWidget: (_, __, ___) => _ImagePlaceholder(
-                    icon: Icons.phone_android_rounded,
-                    color: AppColors.cyan,
-                  ),
-                )
-                    : _ImagePlaceholder(
-                  icon: Icons.phone_android_rounded,
-                  color: AppColors.cyan,
-                ),
-              ),
+            SizedBox(
+              height: 168,
+              width: double.infinity,
+              child: widget.project.imageUrl.isNotEmpty
+                  ? RemoteImage(
+                      url: widget.project.imageUrl,
+                      placeholder: (_) => _IndexPlate(index: widget.index),
+                      error: (_) => _IndexPlate(index: widget.index),
+                    )
+                  : _IndexPlate(index: widget.index),
             ),
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (widget.project.featured)
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.cyanDim,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        'Featured',
-                        style: GoogleFonts.spaceGrotesk(
-                          color: AppColors.cyan,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1,
-                        ),
+                    Text(
+                      'SELECTED',
+                      style: GoogleFonts.ibmPlexMono(
+                        color: AppColors.rust,
+                        fontSize: 10,
+                        letterSpacing: 1.6,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
+                  if (widget.project.featured) const SizedBox(height: 8),
                   Text(
                     widget.project.title,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: 18),
+                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     widget.project.description,
-                    maxLines: 2,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 14),
                   Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
+                    spacing: 8,
+                    runSpacing: 8,
                     children: widget.project.technologies
                         .take(4)
-                        .map((tech) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Text(
-                        tech,
-                        style: GoogleFonts.jetBrainsMono(
-                          color: AppColors.textSecondary,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ))
+                        .map(
+                          (tech) => Text(
+                            tech,
+                            style: GoogleFonts.ibmPlexMono(
+                              color: AppColors.forest,
+                              fontSize: 11,
+                            ),
+                          ),
+                        )
                         .toList(),
                   ),
                   const SizedBox(height: 16),
-                  Row(
+                  Wrap(
+                    spacing: 14,
+                    runSpacing: 8,
                     children: [
-                      if (widget.project.githubUrl.isNotEmpty)
-                        _LinkButton(
-                          icon: FontAwesomeIcons.github,
-                          label: 'Code',
-                          onTap: () => _launch(widget.project.githubUrl),
+                      if (widget.project.appStoreUrl.isNotEmpty)
+                        _TextLink(
+                          label: 'App Store',
+                          onTap: () => openUrl(widget.project.appStoreUrl),
+                          rust: true,
                         ),
-                      const SizedBox(width: 10),
+                      if (widget.project.playStoreUrl.isNotEmpty)
+                        _TextLink(
+                          label: 'Play Store',
+                          onTap: () => openUrl(widget.project.playStoreUrl),
+                          rust: true,
+                        ),
+                      if (widget.project.githubUrl.isNotEmpty)
+                        _TextLink(
+                          label: 'Code',
+                          onTap: () => openUrl(widget.project.githubUrl),
+                        ),
                       if (widget.project.liveUrl.isNotEmpty)
-                        _LinkButton(
-                          icon: Icons.open_in_new_rounded,
+                        _TextLink(
                           label: 'Live',
-                          onTap: () => _launch(widget.project.liveUrl),
-                          isCyan: true,
+                          onTap: () => openUrl(widget.project.liveUrl),
                         ),
                     ],
                   ),
@@ -260,54 +230,51 @@ class _ProjectCardState extends State<ProjectCard> {
           ],
         ),
       ),
-    ).animate(delay: (widget.index * 100).ms).fadeIn(duration: 500.ms).slideY(begin: 0.2, end: 0);
+    ).animate(delay: (widget.index * 80).ms).fadeIn(duration: 450.ms);
   }
 }
 
-class _LinkButton extends StatelessWidget {
-  final dynamic icon;
+class _IndexPlate extends StatelessWidget {
+  final int index;
+  const _IndexPlate({required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.forest,
+      padding: const EdgeInsets.all(20),
+      alignment: Alignment.bottomLeft,
+      child: Text(
+        (index + 1).toString().padLeft(2, '0'),
+        style: GoogleFonts.fraunces(
+          color: AppColors.bg,
+          fontSize: 48,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+}
+
+class _TextLink extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
-  final bool isCyan;
+  final bool rust;
 
-  const _LinkButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.isCyan = false,
-  });
+  const _TextLink({required this.label, required this.onTap, this.rust = false});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isCyan ? AppColors.cyanDim : AppColors.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isCyan ? AppColors.cyan.withOpacity(0.4) : AppColors.border,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            icon is IconData
-                ? Icon(icon as IconData, size: 13,
-                color: isCyan ? AppColors.cyan : AppColors.textSecondary)
-                : FaIcon(icon as IconData, size: 13,
-                color: isCyan ? AppColors.cyan : AppColors.textSecondary),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.spaceGrotesk(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: isCyan ? AppColors.cyan : AppColors.textSecondary,
-              ),
-            ),
-          ],
+      child: Text(
+        label,
+        style: GoogleFonts.outfit(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: rust ? AppColors.rust : AppColors.ink,
+          decoration: TextDecoration.underline,
+          decorationColor: rust ? AppColors.rust : AppColors.ink,
         ),
       ),
     );
@@ -323,148 +290,112 @@ class SkillBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                skill.name,
-                style: GoogleFonts.spaceGrotesk(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
+          Expanded(
+            child: Text(
+              skill.name,
+              style: GoogleFonts.outfit(
+                color: AppColors.ink,
+                fontWeight: FontWeight.w500,
+                fontSize: 15,
               ),
-              Text(
-                '${skill.proficiency}%',
-                style: GoogleFonts.jetBrainsMono(
-                  color: AppColors.cyan,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Container(
-            height: 6,
-            decoration: BoxDecoration(
-              color: AppColors.border,
-              borderRadius: BorderRadius.circular(100),
             ),
-            child: LayoutBuilder(builder: (context, constraints) {
-              return Stack(
-                children: [
-                  Container(
-                    width: constraints.maxWidth * (skill.proficiency / 100),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.cyan, AppColors.purple],
-                      ),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                  ).animate(delay: (index * 80 + 300).ms)
-                      .slideX(begin: -1, end: 0, duration: 800.ms, curve: Curves.easeOutCubic),
-                ],
-              );
-            }),
+          ),
+          Text(
+            '${skill.proficiency}',
+            style: GoogleFonts.ibmPlexMono(
+              color: AppColors.textMuted,
+              fontSize: 12,
+            ),
           ),
         ],
       ),
-    ).animate(delay: (index * 60).ms).fadeIn(duration: 400.ms);
+    ).animate(delay: (index * 40).ms).fadeIn(duration: 350.ms);
   }
 }
 
-class BlogCard extends StatelessWidget {
+class BlogCard extends StatefulWidget {
   final BlogModel blog;
   final int index;
 
   const BlogCard({super.key, required this.blog, required this.index});
 
   @override
+  State<BlogCard> createState() => _BlogCardState();
+}
+
+class _BlogCardState extends State<BlogCard> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return GlowCard(
-      padding: EdgeInsets.zero,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            child: SizedBox(
-              height: 160,
-              width: double.infinity,
-              child: blog.imageUrl.isNotEmpty
-                  ? CachedNetworkImage(
-                imageUrl: blog.imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (_, __) => Container(color: AppColors.surface),
-                errorWidget: (_, __, ___) => _ImagePlaceholder(
-                  icon: Icons.article_rounded,
-                  color: AppColors.purple,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: () => Get.toNamed('/notes/${widget.blog.id}'),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: _hovered ? AppColors.cardHover : AppColors.card,
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.blog.tags.take(2).map((t) => t.toUpperCase()).join('  ·  '),
+                style: GoogleFonts.ibmPlexMono(
+                  color: AppColors.rust,
+                  fontSize: 10,
+                  letterSpacing: 1.4,
                 ),
-              )
-                  : _ImagePlaceholder(
-                icon: Icons.article_rounded,
-                color: AppColors.purple,
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Wrap(
-                  spacing: 6,
-                  children: blog.tags
-                      .take(2)
-                      .map((tag) => Text(
-                    '#$tag',
-                    style: GoogleFonts.spaceGrotesk(
-                      color: AppColors.purple,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+              const SizedBox(height: 14),
+              Text(
+                widget.blog.title,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(height: 1.25),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                widget.blog.excerpt,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const Spacer(),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Text(
+                    '${widget.blog.readTimeMinutes} min',
+                    style: GoogleFonts.ibmPlexMono(
+                      color: AppColors.textMuted,
+                      fontSize: 11,
                     ),
-                  ))
-                      .toList(),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  blog.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontSize: 16,
-                    height: 1.4,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  blog.excerpt,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    const Icon(Icons.schedule_rounded, size: 14, color: AppColors.textMuted),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${blog.readTimeMinutes} min read',
-                      style: GoogleFonts.inter(color: AppColors.textMuted, fontSize: 12),
+                  const Spacer(),
+                  Text(
+                    _hovered ? 'Read →' : 'Read',
+                    style: GoogleFonts.outfit(
+                      color: AppColors.rust,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    ).animate(delay: (index * 100).ms).fadeIn(duration: 500.ms).slideY(begin: 0.2, end: 0);
+    ).animate(delay: (widget.index * 80).ms).fadeIn(duration: 450.ms);
   }
 }
 
@@ -487,64 +418,123 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.05),
-            blurRadius: 20,
-            spreadRadius: 0,
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: color.withOpacity(0.2)),
-            ),
-            child: Icon(icon, color: color, size: 26),
-          ),
-          const SizedBox(height: 16),
-          GradientText(
+          Text(
             value,
-            style: GoogleFonts.spaceGrotesk(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
+            style: GoogleFonts.fraunces(
+              fontSize: 36,
+              fontWeight: FontWeight.w600,
+              color: AppColors.ink,
             ),
-            gradient: LinearGradient(colors: [color, color.withOpacity(0.6)]),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
+            style: GoogleFonts.outfit(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+            ),
           ),
         ],
       ),
-    ).animate(delay: (index * 100).ms).fadeIn(duration: 500.ms)
-        .scale(begin: const Offset(0.9, 0.9), end: const Offset(1, 1));
+    ).animate(delay: (index * 70).ms).fadeIn(duration: 400.ms);
   }
 }
 
-class _ImagePlaceholder extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  const _ImagePlaceholder({required this.icon, required this.color});
+class SocialRow extends StatelessWidget {
+  final MainAxisAlignment alignment;
+  final bool onDark;
+  const SocialRow({
+    super.key,
+    this.alignment = MainAxisAlignment.start,
+    this.onDark = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.surface,
-      child: Center(
-        child: Icon(icon, size: 52, color: color.withOpacity(0.25)),
+    return Row(
+      mainAxisAlignment: alignment,
+      children: [
+        _SocialIcon(
+          icon: FontAwesomeIcons.github,
+          url: SiteConfig.githubUrl,
+          tooltip: 'GitHub',
+          onDark: onDark,
+        ),
+        const SizedBox(width: 10),
+        _SocialIcon(
+          icon: FontAwesomeIcons.linkedinIn,
+          url: SiteConfig.linkedInUrl,
+          tooltip: 'LinkedIn',
+          onDark: onDark,
+        ),
+        const SizedBox(width: 10),
+        _SocialIcon(
+          icon: FontAwesomeIcons.code,
+          url: SiteConfig.leetCodeUrl,
+          tooltip: 'LeetCode',
+          onDark: onDark,
+        ),
+      ],
+    );
+  }
+}
+
+class _SocialIcon extends StatefulWidget {
+  final FaIconData icon;
+  final String url;
+  final String tooltip;
+  final bool onDark;
+
+  const _SocialIcon({
+    required this.icon,
+    required this.url,
+    required this.tooltip,
+    this.onDark = false,
+  });
+
+  @override
+  State<_SocialIcon> createState() => _SocialIconState();
+}
+
+class _SocialIconState extends State<_SocialIcon> {
+  bool _hover = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: widget.tooltip,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hover = true),
+        onExit: (_) => setState(() => _hover = false),
+        child: GestureDetector(
+          onTap: () => openUrl(widget.url),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: _hover
+                  ? (widget.onDark ? AppColors.bg : AppColors.ink)
+                  : Colors.transparent,
+              border: Border.all(
+                color: widget.onDark ? AppColors.bg : AppColors.ink,
+              ),
+            ),
+            child: Center(
+              child: FaIcon(
+                widget.icon,
+                size: 16,
+                color: _hover
+                    ? (widget.onDark ? AppColors.ink : AppColors.bg)
+                    : (widget.onDark ? AppColors.bg : AppColors.ink),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

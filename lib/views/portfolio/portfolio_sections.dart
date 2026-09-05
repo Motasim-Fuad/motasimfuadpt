@@ -1,11 +1,113 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_portfolio/data/site_config.dart';
 import 'package:flutter_portfolio/services/firebase_services.dart';
 import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:flutter_portfolio/utils/open_link.dart';
 import 'package:flutter_portfolio/utils/responsive.dart';
 import 'package:flutter_portfolio/views/portfolio/portfolio_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/model.dart';
+
+class AboutSection extends StatelessWidget {
+  const AboutSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+    return Container(
+      color: AppColors.surface,
+      child: _SectionWrapper(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SectionHeader(
+              label: '01  —  About',
+              title: 'How I like to work',
+              subtitle:
+                  'Production Flutter: GetX + MVVM, Firebase, maps, and billing. I would rather ship a boring reliable session than a clever widget.',
+              alignStart: true,
+            ),
+            const SizedBox(height: 20),
+            Text(
+              SiteConfig.aboutNote,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 48),
+            ...SiteConfig.experience.asMap().entries.map((e) {
+              final job = e.value;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 28),
+                child: isMobile
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _JobMeta(job: job),
+                          const SizedBox(height: 12),
+                          _JobBody(job: job),
+                        ],
+                      )
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(width: 220, child: _JobMeta(job: job)),
+                          Expanded(child: _JobBody(job: job)),
+                        ],
+                      ),
+              ).animate(delay: (e.key * 80).ms).fadeIn(duration: 400.ms);
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _JobMeta extends StatelessWidget {
+  final SiteExperience job;
+  const _JobMeta({required this.job});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          job.period.toUpperCase(),
+          style: GoogleFonts.ibmPlexMono(
+            color: AppColors.rust,
+            fontSize: 11,
+            letterSpacing: 1.4,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(job.company, style: Theme.of(context).textTheme.headlineMedium),
+      ],
+    );
+  }
+}
+
+class _JobBody extends StatelessWidget {
+  final SiteExperience job;
+  const _JobBody({required this.job});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(job.role, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.ink)),
+        const SizedBox(height: 10),
+        ...job.points.map(
+          (p) => Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Text('—  $p', style: Theme.of(context).textTheme.bodyMedium),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class ProjectsSection extends StatelessWidget {
   const ProjectsSection({super.key});
@@ -18,28 +120,32 @@ class ProjectsSection extends StatelessWidget {
       child: Column(
         children: [
           const SectionHeader(
-            label: 'My Work',
-            title: 'Featured Projects',
-            subtitle: 'A selection of apps and projects I\'ve built with Flutter & beyond.',
+            label: '02  —  Work',
+            title: 'Selected projects',
+            subtitle:
+                'Client builds stay private. What I can show is the kind of product work I actually do.',
+            alignStart: true,
           ),
-          const SizedBox(height: 60),
+          const SizedBox(height: 48),
           StreamBuilder<List<ProjectModel>>(
             stream: FirebaseService().streamProjects(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(color: AppColors.cyan));
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.rust),
+                );
               }
               final projects = snapshot.data ?? [];
               if (projects.isEmpty) {
-                return _EmptyState(icon: Icons.phone_android_rounded, label: 'No projects yet');
+                return const _EmptyHint(label: 'Projects will show here from the dashboard.');
               }
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: cols,
-                  crossAxisSpacing: 20,
-                  mainAxisSpacing: 20,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
                   childAspectRatio: 0.72,
                 ),
                 itemCount: projects.length,
@@ -66,19 +172,25 @@ class SkillsSection extends StatelessWidget {
         child: Column(
           children: [
             const SectionHeader(
-              label: 'My Skills',
-              title: 'Technologies & Tools',
-              subtitle: 'Skills I\'ve honed through building real-world projects.',
+              label: '03  —  Stack',
+              title: 'Tools I reach for',
+              subtitle: 'The list matches how I ship, not a generic keyword dump.',
+              alignStart: true,
             ),
-            const SizedBox(height: 60),
+            const SizedBox(height: 48),
             StreamBuilder<List<SkillModel>>(
               stream: FirebaseService().streamSkills(),
               builder: (context, snapshot) {
-                final skills = snapshot.data ?? [];
-                if (skills.isEmpty) {
-                  return _EmptyState(icon: Icons.code_rounded, label: 'No skills added');
-                }
-                final byCategory = <String, List<SkillModel>>{};
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.rust),
+                );
+              }
+              final skills = snapshot.data ?? [];
+              if (skills.isEmpty) {
+                return const _EmptyHint(label: 'Skills will show here from the dashboard.');
+              }
+              final byCategory = <String, List<SkillModel>>{};
                 for (final s in skills) {
                   byCategory.putIfAbsent(s.category, () => []).add(s);
                 }
@@ -91,37 +203,43 @@ class SkillsSection extends StatelessWidget {
     );
   }
 
-  Widget _buildSkillsGrid(BuildContext context, Map<String, List<SkillModel>> byCategory, bool isMobile) {
+  Widget _buildSkillsGrid(
+    BuildContext context,
+    Map<String, List<SkillModel>> byCategory,
+    bool isMobile,
+  ) {
     final categories = byCategory.entries.toList();
     return Wrap(
-      spacing: 24,
-      runSpacing: 24,
+      spacing: 16,
+      runSpacing: 16,
       children: categories.asMap().entries.map((entry) {
         final cat = entry.value;
         return SizedBox(
-          width: isMobile ? double.infinity : (MediaQuery.of(context).size.width > 1200
-              ? (MediaQuery.of(context).size.width - 240 - 48) / 2
-              : (MediaQuery.of(context).size.width - 96 - 24) / 2),
+          width: isMobile
+              ? double.infinity
+              : (MediaQuery.of(context).size.width > 1200
+                  ? 500
+                  : (MediaQuery.of(context).size.width - 96 - 16) / 2),
           child: GlowCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  cat.key,
-                  style: GoogleFonts.spaceGrotesk(
-                    color: AppColors.cyan,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    letterSpacing: 1,
+                  cat.key.toUpperCase(),
+                  style: GoogleFonts.ibmPlexMono(
+                    color: AppColors.rust,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 11,
+                    letterSpacing: 1.6,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 ...cat.value.asMap().entries.map(
                       (e) => SkillBar(skill: e.value, index: e.key),
-                ),
+                    ),
               ],
             ),
-          ).animate(delay: (entry.key * 150).ms).fadeIn(duration: 500.ms).slideY(begin: 0.2, end: 0),
+          ).animate(delay: (entry.key * 100).ms).fadeIn(duration: 400.ms),
         );
       }).toList(),
     );
@@ -140,37 +258,46 @@ class StatsSection extends StatelessWidget {
       child: StreamBuilder<StatsModel>(
         stream: FirebaseService().streamStats(),
         builder: (context, snapshot) {
-          final stats = snapshot.data ?? StatsModel(
-            projectsCompleted: 25,
-            yearsExperience: 3,
-            happyClients: 15,
-            githubStars: 120,
-          );
+          final stats = snapshot.data ??
+              StatsModel(
+                projectsCompleted: 25,
+                yearsExperience: 3,
+                happyClients: 15,
+                githubStars: 120,
+              );
 
           final items = [
-            _StatItem('${stats.projectsCompleted}+', 'Projects Completed', Icons.rocket_launch_rounded, AppColors.cyan),
-            _StatItem('${stats.yearsExperience}+', 'Years Experience', Icons.schedule_rounded, AppColors.purple),
-            _StatItem('${stats.happyClients}+', 'Happy Clients', Icons.sentiment_satisfied_rounded, AppColors.green),
-            _StatItem('${stats.githubStars}+', 'GitHub Stars', Icons.star_rounded, const Color(0xFFFFB800)),
+            _StatItem('${stats.projectsCompleted}+', 'Projects shipped', Icons.circle, AppColors.ink),
+            _StatItem('${stats.yearsExperience}+', 'Years building', Icons.circle, AppColors.ink),
+            _StatItem('${stats.happyClients}+', 'Clients', Icons.circle, AppColors.ink),
           ];
 
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isMobile ? 2 : 4,
-              crossAxisSpacing: 20,
-              mainAxisSpacing: 20,
-              childAspectRatio: isMobile ? 1 : 0.9,
-            ),
-            itemCount: items.length,
-            itemBuilder: (_, i) => StatCard(
-              value: items[i].value,
-              label: items[i].label,
-              icon: items[i].icon,
-              color: items[i].color,
-              index: i,
-            ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Divider(color: AppColors.ink, thickness: 1),
+              const SizedBox(height: 28),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isMobile ? 1 : 3,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: isMobile ? 1.6 : 1.8,
+                ),
+                itemCount: items.length,
+                itemBuilder: (_, i) => StatCard(
+                  value: items[i].value,
+                  label: items[i].label,
+                  icon: items[i].icon,
+                  color: items[i].color,
+                  index: i,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Divider(color: AppColors.ink, thickness: 1),
+            ],
           );
         },
       ),
@@ -190,7 +317,6 @@ class BlogSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = Responsive.isMobile(context);
     final cols = Responsive.projectGridCols(context);
 
     return Container(
@@ -199,46 +325,33 @@ class BlogSection extends StatelessWidget {
         child: Column(
           children: [
             const SectionHeader(
-              label: 'My Blog',
-              title: 'Articles & Insights',
-              subtitle: 'Sharing knowledge about Flutter, mobile dev & tech.',
+              label: '04  —  Notes',
+              title: 'Writing from the work',
+              subtitle:
+                  'Articles I publish from the dashboard — Flutter first, and whatever I am actually working on.',
+              alignStart: true,
             ),
-            const SizedBox(height: 60),
+            const SizedBox(height: 48),
             StreamBuilder<List<BlogModel>>(
               stream: FirebaseService().streamBlogs(publishedOnly: true),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(color: AppColors.cyan),
+                    child: CircularProgressIndicator(color: AppColors.rust),
                   );
                 }
-
-                if (snapshot.hasError) {
-                  print('BlogSection error: ${snapshot.error}');
-                  return _EmptyState(
-                    icon: Icons.error_outline,
-                    label: 'Error loading blogs: ${snapshot.error}',
-                  );
-                }
-
                 final blogs = snapshot.data ?? [];
-                print('BlogSection: ${blogs.length} blogs to display');
-
                 if (blogs.isEmpty) {
-                  return _EmptyState(
-                    icon: Icons.article_rounded,
-                    label: 'No articles yet. Check back soon!',
-                  );
+                  return const _EmptyHint(label: 'Notes will show here once you publish from the dashboard.');
                 }
-
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: cols,
-                    crossAxisSpacing: 20,
-                    mainAxisSpacing: 20,
-                    childAspectRatio: isMobile ? 0.9 : 0.75,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.95,
                   ),
                   itemCount: blogs.length,
                   itemBuilder: (_, i) => BlogCard(blog: blogs[i], index: i),
@@ -267,6 +380,7 @@ class _ContactSectionState extends State<ContactSection> {
   final _msgCtrl = TextEditingController();
   bool _sending = false;
   bool _sent = false;
+  bool _failed = false;
 
   @override
   void dispose() {
@@ -279,7 +393,10 @@ class _ContactSectionState extends State<ContactSection> {
 
   Future<void> _send() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _sending = true);
+    setState(() {
+      _sending = true;
+      _failed = false;
+    });
 
     final contact = ContactModel(
       id: '',
@@ -294,6 +411,7 @@ class _ContactSectionState extends State<ContactSection> {
     setState(() {
       _sending = false;
       _sent = ok;
+      _failed = !ok;
     });
 
     if (ok) {
@@ -301,7 +419,9 @@ class _ContactSectionState extends State<ContactSection> {
       _emailCtrl.clear();
       _subjectCtrl.clear();
       _msgCtrl.clear();
-      Future.delayed(const Duration(seconds: 3), () => setState(() => _sent = false));
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) setState(() => _sent = false);
+      });
     }
   }
 
@@ -313,36 +433,45 @@ class _ContactSectionState extends State<ContactSection> {
       child: Column(
         children: [
           const SectionHeader(
-            label: 'Contact',
-            title: 'Let\'s Work Together',
-            subtitle: 'Have a project in mind? Let\'s build something awesome.',
+            label: '05  —  Contact',
+            title: 'If you have a Flutter product',
+            subtitle: 'Roles, contracts, or a messy subscription flow. Dhaka timezone.',
+            alignStart: true,
           ),
-          const SizedBox(height: 60),
+          const SizedBox(height: 48),
           isMobile
-              ? _ContactForm(
-            formKey: _formKey,
-            controllers: [_nameCtrl, _emailCtrl, _subjectCtrl, _msgCtrl],
-            sending: _sending,
-            sent: _sent,
-            onSend: _send,
-          )
+              ? Column(
+                  children: [
+                    _ContactInfo(),
+                    const SizedBox(height: 20),
+                    _ContactForm(
+                      formKey: _formKey,
+                      controllers: [_nameCtrl, _emailCtrl, _subjectCtrl, _msgCtrl],
+                      sending: _sending,
+                      sent: _sent,
+                      failed: _failed,
+                      onSend: _send,
+                    ),
+                  ],
+                )
               : Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(flex: 4, child: _ContactInfo()),
-              const SizedBox(width: 40),
-              Expanded(
-                flex: 6,
-                child: _ContactForm(
-                  formKey: _formKey,
-                  controllers: [_nameCtrl, _emailCtrl, _subjectCtrl, _msgCtrl],
-                  sending: _sending,
-                  sent: _sent,
-                  onSend: _send,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 4, child: _ContactInfo()),
+                    const SizedBox(width: 28),
+                    Expanded(
+                      flex: 6,
+                      child: _ContactForm(
+                        formKey: _formKey,
+                        controllers: [_nameCtrl, _emailCtrl, _subjectCtrl, _msgCtrl],
+                        sending: _sending,
+                        sent: _sent,
+                        failed: _failed,
+                        onSend: _send,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -356,21 +485,22 @@ class _ContactInfo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GradientText(
-            'Get in Touch',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
+          Text('Direct', style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: 16),
           Text(
-            'I\'m always open to discussing new projects, creative ideas or opportunities to be part of your vision.',
+            'I read every message. If it is a production Flutter app — auth, maps, billing, or a factory-floor workflow — say so in the subject.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          const SizedBox(height: 32),
-          _InfoRow(icon: Icons.mail_outline_rounded, text: 'motasimfuad99@gmail.com'),
-          const SizedBox(height: 16),
-          _InfoRow(icon: Icons.location_on_outlined, text: 'Dhaka, Bangladesh'),
-          const SizedBox(height: 16),
-          //_InfoRow(icon: Icons.access_time_rounded, text: 'Mon - Fri, 9am - 6pm'),
+          const SizedBox(height: 28),
+          _InfoRow(
+            label: 'Email',
+            text: SiteConfig.email,
+            onTap: () => openUrl(SiteConfig.mailUrl),
+          ),
+          const SizedBox(height: 14),
+          const _InfoRow(label: 'Based', text: SiteConfig.location),
+          const SizedBox(height: 28),
+          const SocialRow(),
         ],
       ),
     );
@@ -378,26 +508,40 @@ class _ContactInfo extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  final IconData icon;
+  final String label;
   final String text;
-  const _InfoRow({required this.icon, required this.text});
+  final VoidCallback? onTap;
+  const _InfoRow({required this.label, required this.text, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.cyanDim,
-            borderRadius: BorderRadius.circular(10),
+    return InkWell(
+      onTap: onTap,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 64,
+            child: Text(
+              label.toUpperCase(),
+              style: GoogleFonts.ibmPlexMono(
+                color: AppColors.textMuted,
+                fontSize: 10,
+                letterSpacing: 1.2,
+              ),
+            ),
           ),
-          child: Icon(icon, color: AppColors.cyan, size: 18),
-        ),
-        const SizedBox(width: 14),
-        Text(text, style: Theme.of(context).textTheme.bodyLarge),
-      ],
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.ink,
+                    decoration: onTap != null ? TextDecoration.underline : null,
+                  ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -407,6 +551,7 @@ class _ContactForm extends StatelessWidget {
   final List<TextEditingController> controllers;
   final bool sending;
   final bool sent;
+  final bool failed;
   final VoidCallback onSend;
 
   const _ContactForm({
@@ -414,57 +559,59 @@ class _ContactForm extends StatelessWidget {
     required this.controllers,
     required this.sending,
     required this.sent,
+    required this.failed,
     required this.onSend,
   });
 
   @override
   Widget build(BuildContext context) {
     return GlowCard(
-      glowColor: AppColors.purple,
       child: Form(
         key: formKey,
         child: Column(
           children: [
             if (sent)
-              Container(
-                padding: const EdgeInsets.all(16),
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: AppColors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.green.withOpacity(0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check_circle_rounded, color: AppColors.green),
-                    const SizedBox(width: 10),
-                    Text('Message sent! I\'ll get back to you soon.',
-                        style: TextStyle(color: AppColors.green)),
-                  ],
-                ),
-              ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, end: 0),
+              _Banner(
+                color: AppColors.green,
+                text: 'Sent. I will reply from my inbox.',
+              ),
+            if (failed)
+              const _Banner(
+                color: AppColors.rust,
+                text: 'Could not send. Email me directly instead.',
+              ),
             Row(
               children: [
                 Expanded(child: _field('Name', controllers[0])),
-                const SizedBox(width: 16),
-                Expanded(child: _field('Email', controllers[1])),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _field(
+                    'Email',
+                    controllers[1],
+                    email: true,
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             _field('Subject', controllers[2]),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             _field('Message', controllers[3], maxLines: 5),
-            const SizedBox(height: 24),
+            const SizedBox(height: 22),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: sending ? null : onSend,
                 child: sending
                     ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
-                    : const Text('Send Message'),
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFFFF8F0),
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('Send'),
               ),
             ),
           ],
@@ -473,14 +620,69 @@ class _ContactForm extends StatelessWidget {
     );
   }
 
-  Widget _field(String label, TextEditingController ctrl, {int maxLines = 1}) {
+  Widget _field(
+    String label,
+    TextEditingController ctrl, {
+    int maxLines = 1,
+    bool email = false,
+  }) {
     return TextFormField(
       controller: ctrl,
       maxLines: maxLines,
+      keyboardType: email ? TextInputType.emailAddress : TextInputType.text,
       decoration: InputDecoration(labelText: label),
-      validator: (v) => (v == null || v.isEmpty) ? '$label is required' : null,
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) return '$label is required';
+        if (email && !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim())) {
+          return 'Enter a valid email';
+        }
+        return null;
+      },
     );
   }
+}
+
+class _Banner extends StatelessWidget {
+  final Color color;
+  final String text;
+  const _Banner({required this.color, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        border: Border.all(color: color.withOpacity(0.4)),
+        color: color.withOpacity(0.08),
+      ),
+      child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+    );
+  }
+}
+
+
+class _EmptyHint extends StatelessWidget {
+  final String label;
+  const _EmptyHint({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
+    );
+  }
+}
+
+class SectionWrapper extends StatelessWidget {
+  final Widget child;
+  final bool slim;
+  const SectionWrapper({super.key, required this.child, this.slim = false});
+
+  @override
+  Widget build(BuildContext context) => _SectionWrapper(slim: slim, child: child);
 }
 
 class _SectionWrapper extends StatelessWidget {
@@ -493,31 +695,12 @@ class _SectionWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 1200),
+        constraints: const BoxConstraints(maxWidth: 1120),
         padding: EdgeInsets.symmetric(
           horizontal: Responsive.isMobile(context) ? 24 : 48,
-          vertical: slim ? 60 : 100,
+          vertical: slim ? 48 : 88,
         ),
         child: child,
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _EmptyState({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          Icon(icon, size: 60, color: AppColors.textMuted),
-          const SizedBox(height: 16),
-          Text(label, style: Theme.of(context).textTheme.bodyLarge),
-        ],
       ),
     );
   }

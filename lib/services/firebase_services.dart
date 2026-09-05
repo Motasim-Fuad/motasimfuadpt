@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import '../models/model.dart';
 
@@ -166,6 +167,33 @@ class FirebaseService {
         .collection('meta')
         .doc('stats')
         .set(stats.toFirestore(), SetOptions(merge: true));
+  }
+
+  Stream<String> streamProfileImageUrl() {
+    return _db.collection('meta').doc('profile').snapshots().map((doc) {
+      if (!doc.exists) return '';
+      return (doc.data()?['imageUrl'] ?? '').toString();
+    });
+  }
+
+  Future<void> setProfileImageUrl(String url) {
+    return _db.collection('meta').doc('profile').set(
+      {'imageUrl': url},
+      SetOptions(merge: true),
+    );
+  }
+
+  Future<String> uploadImageBytes({
+    required Uint8List bytes,
+    required String storagePath,
+    String contentType = 'image/jpeg',
+  }) async {
+    final ref = FirebaseStorage.instance.ref(storagePath);
+    await ref.putData(
+      bytes,
+      SettableMetadata(contentType: contentType),
+    );
+    return ref.getDownloadURL();
   }
 
   // ─── DASHBOARD OVERVIEW ─────────────────────

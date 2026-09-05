@@ -45,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: AppColors.dashBg,
       body: Stack(
         children: [
           Positioned(top: -100, right: -100, child: _Orb(color: AppColors.cyan, size: 300)),
@@ -160,11 +160,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextButton.icon(
                       onPressed: () => Get.back(),
                       icon: const Icon(Icons.arrow_back_rounded,
-                          size: 16, color: AppColors.textSecondary),
+                          size: 16, color: AppColors.dashMuted),
                       label: Text(
                         'Back to Portfolio',
                         style: GoogleFonts.spaceGrotesk(
-                          color: AppColors.textSecondary,
+                          color: AppColors.dashMuted,
                           fontSize: 13,
                         ),
                       ),

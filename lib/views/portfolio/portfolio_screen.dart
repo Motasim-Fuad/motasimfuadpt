@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_portfolio/data/site_config.dart';
 import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:flutter_portfolio/utils/open_link.dart';
 import 'package:flutter_portfolio/utils/responsive.dart';
 import 'package:flutter_portfolio/views/portfolio/hero_section.dart';
 import 'package:flutter_portfolio/views/portfolio/portfolio_sections.dart';
@@ -20,20 +21,13 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   int _activeNav = 0;
 
   final _navKeys = List.generate(6, (_) => GlobalKey());
-  final _sections = [
-    'Home',
-    'Projects',
-    'Skills',
-    'Stats',
-    'Blog',
-    'Contact',
-  ];
+  final _sections = ['Home', 'About', 'Work', 'Stack', 'Notes', 'Contact'];
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(() {
-      final show = _scrollController.offset > 50;
+      final show = _scrollController.offset > 40;
       if (show != _showNavBg) setState(() => _showNavBg = show);
     });
   }
@@ -47,8 +41,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   void _scrollTo(int index) {
     final ctx = _navKeys[index].currentContext;
     if (ctx != null) {
-      Scrollable.ensureVisible(ctx,
-          duration: const Duration(milliseconds: 700), curve: Curves.easeInOut);
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 650),
+        curve: Curves.easeInOutCubic,
+      );
     }
     setState(() => _activeNav = index);
   }
@@ -74,9 +71,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             child: Column(
               children: [
                 KeyedSubtree(key: _navKeys[0], child: const HeroSection()),
-                KeyedSubtree(key: _navKeys[1], child: const ProjectsSection()),
-                KeyedSubtree(key: _navKeys[2], child: const SkillsSection()),
-                KeyedSubtree(key: _navKeys[3], child: const StatsSection()),
+                KeyedSubtree(key: _navKeys[1], child: const AboutSection()),
+                KeyedSubtree(key: _navKeys[2], child: const ProjectsSection()),
+                KeyedSubtree(key: _navKeys[3], child: const SkillsSection()),
+                const StatsSection(),
                 KeyedSubtree(key: _navKeys[4], child: const BlogSection()),
                 KeyedSubtree(key: _navKeys[5], child: const ContactSection()),
                 const _Footer(),
@@ -105,57 +103,50 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(70);
+  Size get preferredSize => const Size.fromHeight(64);
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 250),
       decoration: BoxDecoration(
-        color: showBg
-            ? AppColors.surface.withOpacity(0.95)
-            : Colors.transparent,
-        border: showBg
-            ? const Border(bottom: BorderSide(color: AppColors.border, width: 1))
-            : null,
-        boxShadow: showBg
-            ? [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 20)]
-            : [],
+        color: showBg ? AppColors.bg.withOpacity(0.96) : Colors.transparent,
+        border: Border(
+          bottom: BorderSide(
+            color: showBg ? AppColors.border : Colors.transparent,
+          ),
+        ),
       ),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
             children: [
-              GradientText(
-                'Motasim Fuad',
-                style: GoogleFonts.spaceGrotesk(
-                    fontSize: 18, fontWeight: FontWeight.w700),
-                gradient: AppColors.accentGradient,
+              GestureDetector(
+                onTap: () => onTap(0),
+                child: Text(
+                  'MF',
+                  style: GoogleFonts.fraunces(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.ink,
+                  ),
+                ),
               ),
               const Spacer(),
               if (!isMobile)
                 Row(
-                  children: sections.asMap().entries.map((entry) {
+                  children: sections.asMap().entries.skip(1).map((entry) {
                     final isActive = entry.key == activeIndex;
-                    return GestureDetector(
-                      onTap: () => onTap(entry.key),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isActive ? AppColors.cyanDim : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 22),
+                      child: GestureDetector(
+                        onTap: () => onTap(entry.key),
                         child: Text(
                           entry.value,
-                          style: GoogleFonts.spaceGrotesk(
-                            color: isActive
-                                ? AppColors.cyan
-                                : AppColors.textSecondary,
-                            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                          style: GoogleFonts.outfit(
+                            color: isActive ? AppColors.rust : AppColors.ink,
+                            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                             fontSize: 14,
                           ),
                         ),
@@ -165,56 +156,51 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
                 )
               else
                 IconButton(
-                  icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
+                  icon: const Icon(Icons.menu, color: AppColors.ink),
                   onPressed: () => _showMobileMenu(context),
                 ),
             ],
           ),
         ),
       ),
-    ).animate().fadeIn(duration: 600.ms);
+    );
   }
 
   void _showMobileMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      backgroundColor: AppColors.card,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (_) => Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(8, 16, 8, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(100),
+            ...sections.asMap().entries.map(
+              (entry) => ListTile(
+                title: Text(
+                  entry.value,
+                  style: GoogleFonts.fraunces(
+                    color: entry.key == activeIndex ? AppColors.rust : AppColors.ink,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  onTap(entry.key);
+                },
               ),
             ),
-            const SizedBox(height: 24),
-            ...sections.asMap().entries.map((entry) => ListTile(
+            ListTile(
               title: Text(
-                entry.value,
-                style: GoogleFonts.spaceGrotesk(
-                  color: entry.key == activeIndex
-                      ? AppColors.cyan
-                      : AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
+                'Download CV',
+                style: GoogleFonts.outfit(color: AppColors.rust, fontWeight: FontWeight.w600),
               ),
-              trailing: entry.key == activeIndex
-                  ? const Icon(Icons.arrow_forward_ios_rounded,
-                  size: 14, color: AppColors.cyan)
-                  : null,
               onTap: () {
                 Navigator.pop(context);
-                onTap(entry.key);
+                openUrl(SiteConfig.cvUrl);
               },
-            )),
+            ),
           ],
         ),
       ),
@@ -228,33 +214,49 @@ class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.surface,
+      color: AppColors.ink,
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-      child: Column(
-        children: [
-          const Divider(color: AppColors.border),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1120),
+          child: Column(
             children: [
-              GradientText(
-                'Motasim Fuad',
-                style: GoogleFonts.spaceGrotesk(
-                    fontSize: 16, fontWeight: FontWeight.w700),
-                gradient: AppColors.accentGradient,
+              Row(
+                children: [
+                  Text(
+                    SiteConfig.shortName,
+                    style: GoogleFonts.fraunces(
+                      color: AppColors.bg,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () => openUrl(SiteConfig.cvUrl),
+                    child: Text(
+                      'CV',
+                      style: GoogleFonts.outfit(color: AppColors.bg),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              const SocialRow(alignment: MainAxisAlignment.start, onDark: true),
+              const SizedBox(height: 28),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '© ${DateTime.now().year}  ·  Flutter web, not a template.',
+                  style: GoogleFonts.ibmPlexMono(
+                    color: AppColors.bg.withOpacity(0.55),
+                    fontSize: 11,
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            '© ${DateTime.now().year} Md Motasim Fuad. Built with Flutter & Firebase.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontSize: 12,
-              color: AppColors.textMuted,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_portfolio/controllers/auth_controller.dart';
 import 'package:flutter_portfolio/controllers/contact_controller.dart';
+import 'package:flutter_portfolio/controllers/skill_controller.dart';
 import 'package:flutter_portfolio/theme/app_theme.dart';
 import 'package:flutter_portfolio/utils/responsive.dart';
 import 'package:flutter_portfolio/views/dashboard/blogs_page.dart';
@@ -11,7 +12,6 @@ import 'package:flutter_portfolio/views/dashboard/projects_page.dart';
 import 'package:flutter_portfolio/views/dashboard/skills_page.dart';
 import 'package:flutter_portfolio/views/dashboard/stats_page.dart';
 import 'package:flutter_portfolio/views/portfolio/portfolio_widgets.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -24,6 +24,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
   bool _sidebarCollapsed = false;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final _pages = const [
     OverviewPage(),
@@ -47,6 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     ContactController.to.initAdminStream();
+    SkillController.to.cleanupDuplicatesOnce();
   }
 
   @override
@@ -54,7 +56,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final isMobile = Responsive.isMobile(context);
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      key: _scaffoldKey,
+      backgroundColor: AppColors.dashBg,
       drawer: isMobile ? _buildDrawer() : null,
       body: Row(
         children: [
@@ -72,7 +75,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 _TopBar(
                   title: _navItems[_selectedIndex].label,
                   isMobile: isMobile,
-                  onMenuTap: isMobile ? () => Scaffold.of(context).openDrawer() : null,
+                  onMenuTap: isMobile
+                      ? () => _scaffoldKey.currentState?.openDrawer()
+                      : null,
                 ),
                 Expanded(
                   child: AnimatedSwitcher(
@@ -90,7 +95,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildDrawer() {
     return Drawer(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.dashSurface,
       child: SafeArea(
         child: Column(
           children: [
@@ -102,14 +107,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 gradient: AppColors.accentGradient,
               ),
             ),
-            const Divider(color: AppColors.border),
+            const Divider(color: AppColors.dashBorder),
             ..._navItems.asMap().entries.map((e) => ListTile(
               leading: Icon(e.value.icon,
-                  color: e.key == _selectedIndex ? AppColors.cyan : AppColors.textSecondary),
+                  color: e.key == _selectedIndex ? AppColors.cyan : AppColors.dashMuted),
               title: Text(
                 e.value.label,
                 style: GoogleFonts.spaceGrotesk(
-                  color: e.key == _selectedIndex ? AppColors.cyan : AppColors.textPrimary,
+                  color: e.key == _selectedIndex ? AppColors.cyan : AppColors.dashText,
                   fontWeight: e.key == _selectedIndex ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
@@ -121,7 +126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               },
             )),
             const Spacer(),
-            const Divider(color: AppColors.border),
+            const Divider(color: AppColors.dashBorder),
             ListTile(
               leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
               title: Text('Sign Out', style: GoogleFonts.spaceGrotesk(color: Colors.redAccent)),
@@ -157,8 +162,8 @@ class _Sidebar extends StatelessWidget {
       duration: const Duration(milliseconds: 250),
       width: width,
       decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(right: BorderSide(color: AppColors.border)),
+        color: AppColors.dashSurface,
+        border: Border(right: BorderSide(color: AppColors.dashBorder)),
       ),
       child: Column(
         children: [
@@ -195,7 +200,7 @@ class _Sidebar extends StatelessWidget {
               onPressed: onToggle,
               icon: Icon(
                 collapsed ? Icons.keyboard_double_arrow_right_rounded : Icons.keyboard_double_arrow_left_rounded,
-                color: AppColors.textMuted,
+                color: AppColors.dashMuted,
               ),
             ),
           ),
@@ -226,7 +231,7 @@ class _SidebarItem extends StatelessWidget {
         ? Colors.redAccent
         : isSelected
         ? AppColors.cyan
-        : AppColors.textSecondary;
+        : AppColors.dashMuted;
 
     return Tooltip(
       message: collapsed ? item.label : '',
@@ -280,15 +285,15 @@ class _TopBar extends StatelessWidget {
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
+        color: AppColors.dashSurface,
+        border: Border(bottom: BorderSide(color: AppColors.dashBorder)),
       ),
       child: Row(
         children: [
           if (isMobile && onMenuTap != null)
             IconButton(
               onPressed: onMenuTap,
-              icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
+              icon: const Icon(Icons.menu_rounded, color: AppColors.dashText),
             ),
           Text(title, style: Theme.of(context).textTheme.headlineMedium),
           const Spacer(),

@@ -6,6 +6,7 @@ import 'package:flutter_portfolio/bindings/app_binding.dart';
 import 'package:flutter_portfolio/theme/app_theme.dart';
 import 'package:flutter_portfolio/views/dashboard/dashboard_guard.dart';
 import 'package:flutter_portfolio/views/dashboard/login_screen.dart';
+import 'package:flutter_portfolio/views/portfolio/blog_article_page.dart';
 import 'package:flutter_portfolio/views/portfolio/portfolio_screen.dart';
 import 'package:get/get.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -19,7 +20,6 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Web-এ Firestore persistence বন্ধ
   if (kIsWeb) {
     FirebaseFirestore.instance.settings = const Settings(
       persistenceEnabled: false,
@@ -35,16 +35,29 @@ class PortfolioApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Motasim Fuad — Flutter Developer',
+      title: 'Motasim Fuad — Flutter Engineer',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      initialBinding: AppBinding(), // ← এইটা সব controller রেজিস্টার করে
+      initialBinding: AppBinding(),
       initialRoute: '/',
       getPages: [
         GetPage(name: '/', page: () => const PortfolioScreen()),
         GetPage(name: '/portfolio', page: () => const PortfolioScreen()),
-        GetPage(name: '/login', page: () => const LoginScreen()),
-        GetPage(name: '/dashboard', page: () => const DashboardGuard()),
+        GetPage(name: '/notes/:id', page: () => const BlogArticlePage()),
+        GetPage(
+          name: '/login',
+          page: () => Theme(
+            data: AppTheme.dashboardTheme,
+            child: const LoginScreen(),
+          ),
+        ),
+        GetPage(
+          name: '/dashboard',
+          page: () => Theme(
+            data: AppTheme.dashboardTheme,
+            child: const DashboardGuard(),
+          ),
+        ),
       ],
     );
   }

@@ -11,6 +11,8 @@ class ContactController extends GetxController {
   final isSending = false.obs;
   final sent = false.obs;
 
+  bool _listening = false;
+
   @override
   void onInit() {
     super.onInit();
@@ -22,6 +24,8 @@ class ContactController extends GetxController {
   }
 
   void _loadContacts() {
+    if (_listening) return;
+    _listening = true;
     _service.streamContacts().listen((list) {
       contacts.value = list;
       isLoading.value = false;
@@ -29,7 +33,7 @@ class ContactController extends GetxController {
   }
 
   void initAdminStream() {
-    if (_service.isAdmin && contacts.isEmpty) {
+    if (_service.isAdmin) {
       _loadContacts();
     }
   }

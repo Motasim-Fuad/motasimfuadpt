@@ -8,6 +8,8 @@ class ProjectModel {
   final List<String> technologies;
   final String githubUrl;
   final String liveUrl;
+  final String appStoreUrl;
+  final String playStoreUrl;
   final bool featured;
   final int order;
   final DateTime createdAt;
@@ -20,21 +22,49 @@ class ProjectModel {
     required this.technologies,
     this.githubUrl = '',
     this.liveUrl = '',
+    this.appStoreUrl = '',
+    this.playStoreUrl = '',
     this.featured = false,
     this.order = 0,
     required this.createdAt,
   });
 
+  static bool looksLikeAppStore(String url) {
+    final u = url.toLowerCase();
+    return u.contains('apps.apple.com') || u.contains('itunes.apple.com');
+  }
+
+  static bool looksLikePlayStore(String url) {
+    final u = url.toLowerCase();
+    return u.contains('play.google.com') || u.contains('play.app.goo.gl');
+  }
+
+  static bool looksLikeGithub(String url) {
+    return url.toLowerCase().contains('github.com');
+  }
+
   factory ProjectModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    final github = (data['githubUrl'] ?? '').toString();
+    final live = (data['liveUrl'] ?? '').toString();
+    var appStore = (data['appStoreUrl'] ?? '').toString();
+    var playStore = (data['playStoreUrl'] ?? '').toString();
+
+    if (appStore.isEmpty && looksLikeAppStore(github)) appStore = github;
+    if (appStore.isEmpty && looksLikeAppStore(live)) appStore = live;
+    if (playStore.isEmpty && looksLikePlayStore(live)) playStore = live;
+    if (playStore.isEmpty && looksLikePlayStore(github)) playStore = github;
+
     return ProjectModel(
       id: doc.id,
       title: data['title'] ?? '',
       description: data['description'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
       technologies: List<String>.from(data['technologies'] ?? []),
-      githubUrl: data['githubUrl'] ?? '',
-      liveUrl: data['liveUrl'] ?? '',
+      githubUrl: looksLikeGithub(github) ? github : '',
+      liveUrl: (looksLikeAppStore(live) || looksLikePlayStore(live)) ? '' : live,
+      appStoreUrl: appStore,
+      playStoreUrl: playStore,
       featured: data['featured'] ?? false,
       order: data['order'] ?? 0,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -48,6 +78,8 @@ class ProjectModel {
     'technologies': technologies,
     'githubUrl': githubUrl,
     'liveUrl': liveUrl,
+    'appStoreUrl': appStoreUrl,
+    'playStoreUrl': playStoreUrl,
     'featured': featured,
     'order': order,
     'createdAt': Timestamp.fromDate(createdAt),
