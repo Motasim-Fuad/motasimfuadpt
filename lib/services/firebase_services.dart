@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -181,26 +182,59 @@ class FirebaseService {
     );
   }
 
+  static const int _maxInlineBytes = 550 * 1024;
+
   Future<String> uploadImageBytes({
     required Uint8List bytes,
     required String storagePath,
     String contentType = 'image/jpeg',
   }) async {
+    // Flutter web PUT to GCS needs bucket CORS. Until that is set,
+    // keep photos in Firestore as a data URL (document cap ~1 MB).
+    if (kIsWeb && bytes.lengthInBytes <= _maxInlineBytes) {
+      return 'data:$contentType;base64,${base64Encode(bytes)}';
+    }
+
     final storage = FirebaseStorage.instance;
-    storage.setMaxUploadRetryTime(const Duration(seconds: 20));
-    storage.setMaxOperationRetryTime(const Duration(seconds: 20));
+    storage.setMaxUploadRetryTime(const Duration(seconds: 8));
+    storage.setMaxOperationRetryTime(const Duration(seconds: 8));
     final ref = storage.ref(storagePath);
     try {
       await ref
           .putData(bytes, SettableMetadata(contentType: contentType))
-          .timeout(const Duration(seconds: 45));
-    } on TimeoutException {
-      throw Exception(
-        'Upload timed out. Chrome localhost uploads need Storage CORS. '
-        'Run: gsutil cors set cors.json gs://motasimfuadpt.firebasestorage.app',
-      );
+          .timeout(const Duration(seconds: 12));
+      return await ref.getDownloadURL();
+    } catch (e) {
+      if (_canInlineAfterStorageFailure(e, bytes)) {
+        return 'data:$contentType;base64,${base64Encode(bytes)}';
+      }
+      if (_isStorageBlocked(e)) {
+        throw Exception(
+          'Firebase Storage is blocked in this browser (CORS). '
+          'Pick a smaller JPEG (under 500 KB) so it can be saved without Storage.',
+        );
+      }
+      rethrow;
     }
-    return ref.getDownloadURL();
+  }
+
+  bool _isStorageBlocked(Object e) {
+    if (e is TimeoutException) return true;
+    if (e is FirebaseException) {
+      return e.code == 'retry-limit-exceeded' ||
+          e.code == 'unauthorized' ||
+          e.code == 'unknown';
+    }
+    final s = e.toString().toLowerCase();
+    return s.contains('retry-limit-exceeded') ||
+        s.contains('timeout') ||
+        s.contains('cors');
+  }
+
+  bool _canInlineAfterStorageFailure(Object e, Uint8List bytes) {
+    return kIsWeb &&
+        _isStorageBlocked(e) &&
+        bytes.lengthInBytes <= _maxInlineBytes;
   }
 
   // ─── DASHBOARD OVERVIEW ─────────────────────

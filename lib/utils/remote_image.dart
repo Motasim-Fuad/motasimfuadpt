@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -55,6 +57,24 @@ class RemoteImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final resolved = resolveImageUrl(url);
     if (resolved.isEmpty) return placeholder(context);
+
+    if (resolved.startsWith('data:image/')) {
+      const marker = 'base64,';
+      final at = resolved.indexOf(marker);
+      if (at < 0) return error(context);
+      try {
+        final bytes = base64Decode(resolved.substring(at + marker.length));
+        return Image.memory(
+          bytes,
+          fit: fit,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, _, __) => error(context),
+        );
+      } catch (_) {
+        return error(context);
+      }
+    }
 
     return Image.network(
       resolved,

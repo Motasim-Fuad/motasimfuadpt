@@ -16,21 +16,22 @@ class PickedLocalImage {
 Future<PickedLocalImage?> pickLocalImage() async {
   final file = await ImagePicker().pickImage(
     source: ImageSource.gallery,
-    imageQuality: 70,
-    maxWidth: 1200,
+    imageQuality: 62,
+    maxWidth: 900,
   );
   if (file == null) return null;
   final bytes = await file.readAsBytes();
-  if (bytes.length > 2 * 1024 * 1024) {
-    throw Exception('Image is still larger than 2 MB after compression. Pick a smaller photo.');
+  if (bytes.length > 550 * 1024) {
+    throw Exception(
+      'Photo is still ${(bytes.length / 1024).round()} KB after compression. '
+      'Choose a smaller picture.',
+    );
   }
-  final name = file.name.toLowerCase();
-  final contentType = name.endsWith('.png')
-      ? 'image/png'
-      : name.endsWith('.webp')
-          ? 'image/webp'
-          : 'image/jpeg';
-  return PickedLocalImage(bytes: bytes, name: file.name, contentType: contentType);
+  return PickedLocalImage(
+    bytes: bytes,
+    name: file.name,
+    contentType: 'image/jpeg',
+  );
 }
 
 String storageExtFor(String contentType) {

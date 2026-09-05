@@ -32,7 +32,10 @@ class ProfileController extends GetxController {
       );
       await _service.setProfileImageUrl(url);
     } catch (e) {
-      error.value = e.toString();
+      final text = e.toString();
+      error.value = text.startsWith('Exception: ')
+          ? text.substring('Exception: '.length)
+          : text;
     } finally {
       uploading.value = false;
     }
