@@ -23,7 +23,7 @@ class SiteConfig {
   static const experience = [
     SiteExperience(
       role: 'Mobile App Developer',
-      company: 'SparkTech Agency',
+      company: 'GM IT Solution',
       period: 'May 2025 – Present',
       points: [
         'Production Flutter apps with MVVM and Clean Architecture: HRLynx, ChatterBee, Hop Across America.',
