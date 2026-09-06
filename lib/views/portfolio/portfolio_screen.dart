@@ -123,17 +123,6 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
             children: [
-              GestureDetector(
-                onTap: () => onTap(0),
-                child: Text(
-                  'MF',
-                  style: GoogleFonts.fraunces(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.ink,
-                  ),
-                ),
-              ),
               const Spacer(),
               if (!isMobile)
                 Row(

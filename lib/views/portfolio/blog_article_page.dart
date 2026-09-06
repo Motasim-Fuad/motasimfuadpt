@@ -62,10 +62,7 @@ class BlogArticlePage extends StatelessWidget {
             }
           },
         ),
-        title: Text(
-          'MF',
-          style: GoogleFonts.fraunces(color: AppColors.ink, fontWeight: FontWeight.w600),
-        ),
+        title: const SizedBox.shrink(),
       ),
       body: Center(
         child: ConstrainedBox(

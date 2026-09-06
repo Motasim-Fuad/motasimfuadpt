@@ -172,15 +172,20 @@ class _Portrait extends StatelessWidget {
             child: StreamBuilder<String>(
               stream: FirebaseService().streamProfileImageUrl(),
               builder: (context, snapshot) {
+                final waiting = snapshot.connectionState ==
+                    ConnectionState.waiting;
                 final url = snapshot.data ?? '';
-                if (url.isNotEmpty) {
-                  return RemoteImage(
-                    url: url,
-                    placeholder: (_) => const PortraitFallback(),
-                    error: (_) => const PortraitFallback(),
-                  );
+                if (waiting && url.isEmpty) {
+                  return const ImageShimmer();
                 }
-                return const PortraitFallback();
+                if (url.isEmpty) {
+                  return const ColoredBox(color: AppColors.surface);
+                }
+                return RemoteImage(
+                  url: url,
+                  placeholder: (_) => const ImageShimmer(),
+                  error: (_) => const ColoredBox(color: AppColors.surface),
+                );
               },
             ),
           ),

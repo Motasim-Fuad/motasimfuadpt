@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_portfolio/theme/app_theme.dart';
 
 /// Turns share/view links into a URL a browser `<img>` can actually load.
 String resolveImageUrl(String raw) {
@@ -69,6 +71,7 @@ class RemoteImage extends StatelessWidget {
           fit: fit,
           width: double.infinity,
           height: double.infinity,
+          gaplessPlayback: true,
           errorBuilder: (context, _, __) => error(context),
         );
       } catch (_) {
@@ -81,6 +84,7 @@ class RemoteImage extends StatelessWidget {
       fit: fit,
       width: double.infinity,
       height: double.infinity,
+      gaplessPlayback: true,
       webHtmlElementStrategy: kIsWeb
           ? WebHtmlElementStrategy.prefer
           : WebHtmlElementStrategy.never,
@@ -90,5 +94,24 @@ class RemoteImage extends StatelessWidget {
       },
       errorBuilder: (context, _, __) => error(context),
     );
+  }
+}
+
+class ImageShimmer extends StatelessWidget {
+  final bool onDark;
+
+  const ImageShimmer({super.key, this.onDark = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: onDark ? AppColors.dashSurface : AppColors.surface,
+      child: const SizedBox.expand(),
+    )
+        .animate(onPlay: (c) => c.repeat())
+        .shimmer(
+          duration: 1200.ms,
+          color: onDark ? AppColors.dashBorder : const Color(0xFFE4D9C8),
+        );
   }
 }

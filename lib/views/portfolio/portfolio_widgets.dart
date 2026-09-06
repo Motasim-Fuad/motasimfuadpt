@@ -84,29 +84,6 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
-class PortraitFallback extends StatelessWidget {
-  final bool onDark;
-
-  const PortraitFallback({super.key, this.onDark = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: onDark ? AppColors.dashSurface : AppColors.forest,
-      child: Center(
-        child: Text(
-          'MF',
-          style: GoogleFonts.fraunces(
-            color: onDark ? AppColors.dashText : AppColors.bg,
-            fontSize: 42,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class GlowCard extends StatelessWidget {
   final Widget child;
   final Color glowColor;
