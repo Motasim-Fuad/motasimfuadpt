@@ -12,7 +12,7 @@ class SiteConfig {
       'I am an app developer first. Python, FastAPI, PostgreSQL, Docker, and Redis are intermediate — I use them to understand the API I consume, and I can grow into fuller stack work with a backend lead in the room.';
 
   static const cvUrl =
-      'https://drive.google.com/file/d/1Q76vtFLJd29LyYNz0iTLOh04Pa6vswCR/view?usp=drive_link';
+      'hhttps://drive.google.com/file/d/1PvXQFh3Ymuyz4Ma6-YmPg0bm08qwMvhS/view?usp=drive_link';
   static const githubUrl = 'https://github.com/Motasim-Fuad';
   static const linkedInUrl =
       'https://www.linkedin.com/in/motasim-fuad-27949b319/';
