@@ -504,7 +504,7 @@ class _ContactInfo extends StatelessWidget {
           _InfoRow(
             label: 'Email',
             text: SiteConfig.email,
-            onTap: () => openUrl(SiteConfig.mailUrl),
+            url: SiteConfig.mailUrl,
           ),
           const SizedBox(height: 14),
           const _InfoRow(label: 'Based', text: SiteConfig.location),
@@ -519,39 +519,38 @@ class _ContactInfo extends StatelessWidget {
 class _InfoRow extends StatelessWidget {
   final String label;
   final String text;
-  final VoidCallback? onTap;
-  const _InfoRow({required this.label, required this.text, this.onTap});
+  final String? url;
+  const _InfoRow({required this.label, required this.text, this.url});
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 64,
-            child: Text(
-              label.toUpperCase(),
-              style: GoogleFonts.ibmPlexMono(
-                color: AppColors.textMuted,
-                fontSize: 10,
-                letterSpacing: 1.2,
-              ),
+    final row = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 64,
+          child: Text(
+            label.toUpperCase(),
+            style: GoogleFonts.ibmPlexMono(
+              color: AppColors.textMuted,
+              fontSize: 10,
+              letterSpacing: 1.2,
             ),
           ),
-          Expanded(
-            child: Text(
-              text,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.ink,
-                    decoration: onTap != null ? TextDecoration.underline : null,
-                  ),
-            ),
+        ),
+        Expanded(
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.ink,
+                  decoration: url != null ? TextDecoration.underline : null,
+                ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
+    if (url == null) return row;
+    return WebLink(url: url!, child: row);
   }
 }
 

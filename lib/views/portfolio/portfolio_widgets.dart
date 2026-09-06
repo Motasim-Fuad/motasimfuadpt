@@ -228,24 +228,24 @@ class _ProjectCardState extends State<ProjectCard> {
                       if (widget.project.appStoreUrl.isNotEmpty)
                         _TextLink(
                           label: 'App Store',
-                          onTap: () => openUrl(widget.project.appStoreUrl),
+                          url: widget.project.appStoreUrl,
                           rust: true,
                         ),
                       if (widget.project.playStoreUrl.isNotEmpty)
                         _TextLink(
                           label: 'Play Store',
-                          onTap: () => openUrl(widget.project.playStoreUrl),
+                          url: widget.project.playStoreUrl,
                           rust: true,
                         ),
                       if (widget.project.githubUrl.isNotEmpty)
                         _TextLink(
                           label: 'Code',
-                          onTap: () => openUrl(widget.project.githubUrl),
+                          url: widget.project.githubUrl,
                         ),
                       if (widget.project.liveUrl.isNotEmpty)
                         _TextLink(
                           label: 'Live',
-                          onTap: () => openUrl(widget.project.liveUrl),
+                          url: widget.project.liveUrl,
                         ),
                     ],
                   ),
@@ -342,15 +342,15 @@ class _IndexPlate extends StatelessWidget {
 
 class _TextLink extends StatelessWidget {
   final String label;
-  final VoidCallback onTap;
+  final String url;
   final bool rust;
 
-  const _TextLink({required this.label, required this.onTap, this.rust = false});
+  const _TextLink({required this.label, required this.url, this.rust = false});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return WebLink(
+      url: url,
       child: Text(
         label,
         style: GoogleFonts.outfit(
@@ -591,11 +591,11 @@ class _SocialIconState extends State<_SocialIcon> {
   Widget build(BuildContext context) {
     return Tooltip(
       message: widget.tooltip,
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _hover = true),
-        onExit: (_) => setState(() => _hover = false),
-        child: GestureDetector(
-          onTap: () => openUrl(widget.url),
+      child: WebLink(
+        url: widget.url,
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _hover = true),
+          onExit: (_) => setState(() => _hover = false),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             width: 42,

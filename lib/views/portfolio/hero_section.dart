@@ -8,6 +8,7 @@ import 'package:flutter_portfolio/utils/remote_image.dart';
 import 'package:flutter_portfolio/utils/responsive.dart';
 import 'package:flutter_portfolio/views/portfolio/portfolio_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/link.dart';
 
 class HeroSection extends StatelessWidget {
   const HeroSection({super.key});
@@ -127,13 +128,21 @@ class _HeroCopy extends StatelessWidget {
           runSpacing: 12,
           alignment: centered ? WrapAlignment.center : WrapAlignment.start,
           children: [
-            ElevatedButton(
-              onPressed: () => openUrl(SiteConfig.cvUrl),
-              child: const Text('Download CV'),
+            Link(
+              uri: parseLaunchUri(SiteConfig.cvUrl),
+              target: LinkTarget.blank,
+              builder: (context, followLink) => ElevatedButton(
+                onPressed: followLink,
+                child: const Text('Download CV'),
+              ),
             ),
-            OutlinedButton(
-              onPressed: () => openUrl(SiteConfig.mailUrl),
-              child: const Text('Write to me'),
+            Link(
+              uri: parseLaunchUri(SiteConfig.mailUrl),
+              target: LinkTarget.blank,
+              builder: (context, followLink) => OutlinedButton(
+                onPressed: followLink,
+                child: const Text('Write to me'),
+              ),
             ),
           ],
         ).animate().fadeIn(duration: 500.ms, delay: 240.ms),

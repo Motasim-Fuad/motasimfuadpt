@@ -7,6 +7,7 @@ import 'package:flutter_portfolio/views/portfolio/hero_section.dart';
 import 'package:flutter_portfolio/views/portfolio/portfolio_sections.dart';
 import 'package:flutter_portfolio/views/portfolio/portfolio_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/link.dart';
 
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
@@ -191,15 +192,15 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
                 },
               ),
             ),
-            ListTile(
-              title: Text(
-                'Download CV',
-                style: GoogleFonts.outfit(color: AppColors.rust, fontWeight: FontWeight.w600),
+            WebLink(
+              url: SiteConfig.cvUrl,
+              child: ListTile(
+                title: Text(
+                  'Download CV',
+                  style: GoogleFonts.outfit(color: AppColors.rust, fontWeight: FontWeight.w600),
+                ),
+                onTap: () => Navigator.pop(context),
               ),
-              onTap: () {
-                Navigator.pop(context);
-                openUrl(SiteConfig.cvUrl);
-              },
             ),
           ],
         ),
@@ -232,11 +233,15 @@ class _Footer extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  TextButton(
-                    onPressed: () => openUrl(SiteConfig.cvUrl),
-                    child: Text(
-                      'CV',
-                      style: GoogleFonts.outfit(color: AppColors.bg),
+                  Link(
+                    uri: parseLaunchUri(SiteConfig.cvUrl),
+                    target: LinkTarget.blank,
+                    builder: (context, followLink) => TextButton(
+                      onPressed: followLink,
+                      child: Text(
+                        'CV',
+                        style: GoogleFonts.outfit(color: AppColors.bg),
+                      ),
                     ),
                   ),
                 ],
