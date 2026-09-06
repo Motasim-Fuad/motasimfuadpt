@@ -124,7 +124,8 @@ class FirebaseService {
     try {
       await _db.collection('contacts').add(contact.toFirestore());
       return true;
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('sendContact failed: $e\n$st');
       return false;
     }
   }

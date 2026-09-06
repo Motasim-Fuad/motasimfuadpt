@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    match /projects/{id} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /skills/{id} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /blogs/{id} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /meta/{id} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    match /contacts/{id} {
+      allow create: if request.resource.data.keys().hasAll([
+          'name', 'email', 'subject', 'message', 'read', 'sentAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.email is string
+        && request.resource.data.email.size() > 3
+        && request.resource.data.email.size() <= 200
+        && request.resource.data.subject is string
+        && request.resource.data.subject.size() > 0
+        && request.resource.data.subject.size() <= 200
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 4000
+        && request.resource.data.read == false
+        && request.resource.data.sentAt is timestamp;
+      allow read, update, delete: if isSignedIn();
+    }
+  }
+}
