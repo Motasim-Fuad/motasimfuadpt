@@ -140,16 +140,20 @@ class _ProjectTile extends StatelessWidget {
             child: project.imageUrl.isNotEmpty
                 ? ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: RemoteImage(
-                url: project.imageUrl,
-                placeholder: (_) => const Icon(
-                    Icons.phone_android_rounded,
-                    color: AppColors.dashMuted,
-                    size: 24),
-                error: (_) => const Icon(
-                    Icons.phone_android_rounded,
-                    color: AppColors.dashMuted,
-                    size: 24),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: RemoteImage(
+                  url: project.imageUrl,
+                  fit: BoxFit.contain,
+                  placeholder: (_) => const Icon(
+                      Icons.phone_android_rounded,
+                      color: AppColors.dashMuted,
+                      size: 24),
+                  error: (_) => const Icon(
+                      Icons.phone_android_rounded,
+                      color: AppColors.dashMuted,
+                      size: 24),
+                ),
               ),
             )
                 : const Icon(Icons.phone_android_rounded,
@@ -376,7 +380,7 @@ class _ProjectDialogState extends State<_ProjectDialog> {
       setState(() => _loading = false);
       Get.snackbar(
         'Could not save',
-        '$e',
+        e.toString(),
         snackPosition: SnackPosition.BOTTOM,
       );
     }
@@ -451,27 +455,45 @@ class _ProjectDialogState extends State<_ProjectDialog> {
                               : 'File selected: ${_picked!.name}'),
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Max image size ${formatBytesAsMb(maxUploadImageBytes)}',
+                          style: const TextStyle(
+                            color: AppColors.dashMuted,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
                       if (_picked != null) ...[
                         const SizedBox(height: 12),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.memory(
-                            _picked!.bytes,
-                            height: 120,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
+                          child: ColoredBox(
+                            color: AppColors.dashSurface,
+                            child: Image.memory(
+                              _picked!.bytes,
+                              height: 160,
+                              width: double.infinity,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                       ] else if (_imgCtrl.text.trim().isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        SizedBox(
-                          height: 120,
-                          width: double.infinity,
-                          child: RemoteImage(
-                            url: _imgCtrl.text,
-                            placeholder: (_) => const SizedBox(),
-                            error: (_) => const Center(
-                              child: Text('Preview failed'),
+                        ColoredBox(
+                          color: AppColors.dashSurface,
+                          child: SizedBox(
+                            height: 160,
+                            width: double.infinity,
+                            child: RemoteImage(
+                              url: _imgCtrl.text,
+                              fit: BoxFit.contain,
+                              placeholder: (_) => const SizedBox(),
+                              error: (_) => const Center(
+                                child: Text('Preview failed'),
+                              ),
                             ),
                           ),
                         ),

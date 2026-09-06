@@ -140,16 +140,23 @@ class _ProjectCardState extends State<ProjectCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 168,
-              width: double.infinity,
-              child: widget.project.imageUrl.isNotEmpty
-                  ? RemoteImage(
-                      url: widget.project.imageUrl,
-                      placeholder: (_) => _IndexPlate(index: widget.index),
-                      error: (_) => _IndexPlate(index: widget.index),
-                    )
-                  : _IndexPlate(index: widget.index),
+            ColoredBox(
+              color: AppColors.surface,
+              child: SizedBox(
+                height: 196,
+                width: double.infinity,
+                child: widget.project.imageUrl.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: RemoteImage(
+                          url: widget.project.imageUrl,
+                          fit: BoxFit.contain,
+                          placeholder: (_) => _IndexPlate(index: widget.index),
+                          error: (_) => _IndexPlate(index: widget.index),
+                        ),
+                      )
+                    : _IndexPlate(index: widget.index),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
@@ -172,12 +179,7 @@ class _ProjectCardState extends State<ProjectCard> {
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    widget.project.description,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
+                  _ExpandableDescription(text: widget.project.description),
                   const SizedBox(height: 14),
                   Wrap(
                     spacing: 8,
@@ -231,6 +233,65 @@ class _ProjectCardState extends State<ProjectCard> {
         ),
       ),
     ).animate(delay: (widget.index * 80).ms).fadeIn(duration: 450.ms);
+  }
+}
+
+class _ExpandableDescription extends StatefulWidget {
+  final String text;
+
+  const _ExpandableDescription({required this.text});
+
+  @override
+  State<_ExpandableDescription> createState() => _ExpandableDescriptionState();
+}
+
+class _ExpandableDescriptionState extends State<_ExpandableDescription> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.bodyMedium;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final painter = TextPainter(
+          text: TextSpan(text: widget.text, style: style),
+          maxLines: 3,
+          textDirection: Directionality.of(context),
+        )..layout(maxWidth: constraints.maxWidth);
+        final overflows = painter.didExceedMaxLines;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.text,
+              maxLines: _expanded ? null : 3,
+              overflow: _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
+              style: style,
+            ),
+            if (overflows) ...[
+              const SizedBox(height: 6),
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () => setState(() => _expanded = !_expanded),
+                  child: Text(
+                    _expanded ? 'See less' : 'See more',
+                    style: GoogleFonts.outfit(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.rust,
+                      decoration: TextDecoration.underline,
+                      decorationColor: AppColors.rust,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
   }
 }
 

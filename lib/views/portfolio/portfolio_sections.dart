@@ -139,17 +139,26 @@ class ProjectsSection extends StatelessWidget {
               if (projects.isEmpty) {
                 return const _EmptyHint(label: 'Projects will show here from the dashboard.');
               }
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: cols,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 0.72,
-                ),
-                itemCount: projects.length,
-                itemBuilder: (_, i) => ProjectCard(project: projects[i], index: i),
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  const gap = 16.0;
+                  final width =
+                      (constraints.maxWidth - gap * (cols - 1)) / cols;
+                  return Wrap(
+                    spacing: gap,
+                    runSpacing: gap,
+                    children: [
+                      for (var i = 0; i < projects.length; i++)
+                        SizedBox(
+                          width: width,
+                          child: ProjectCard(
+                            project: projects[i],
+                            index: i,
+                          ),
+                        ),
+                    ],
+                  );
+                },
               );
             },
           ),

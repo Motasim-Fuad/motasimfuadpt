@@ -4,6 +4,7 @@ import 'package:flutter_portfolio/controllers/contact_controller.dart';
 import 'package:flutter_portfolio/controllers/profile_controller.dart';
 import 'package:flutter_portfolio/controllers/skill_controller.dart';
 import 'package:flutter_portfolio/controllers/stats_controller.dart';
+import 'package:flutter_portfolio/utils/pick_local_image.dart';
 import 'package:flutter_portfolio/utils/remote_image.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -410,7 +411,7 @@ class _ProfilePhotoCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Upload from this computer. It replaces the hero image on the public site.',
+                    'Upload from this computer (max ${formatBytesAsMb(maxUploadImageBytes)}). It replaces the hero image on the public site.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   if (err != null) ...[
