@@ -167,20 +167,11 @@ class _Portrait extends StatelessWidget {
                 if (url.isNotEmpty) {
                   return RemoteImage(
                     url: url,
-                    placeholder: (_) => Image.asset(
-                      'assets/profile_picture.jpeg',
-                      fit: BoxFit.cover,
-                    ),
-                    error: (_) => Image.asset(
-                      'assets/profile_picture.jpeg',
-                      fit: BoxFit.cover,
-                    ),
+                    placeholder: (_) => const PortraitFallback(),
+                    error: (_) => const PortraitFallback(),
                   );
                 }
-                return Image.asset(
-                  'assets/profile_picture.jpeg',
-                  fit: BoxFit.cover,
-                );
+                return const PortraitFallback();
               },
             ),
           ),

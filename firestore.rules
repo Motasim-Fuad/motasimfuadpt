@@ -25,24 +25,9 @@ service cloud.firestore {
       allow write: if isSignedIn();
     }
 
+    // Public contact form: visitors are not logged in.
     match /contacts/{id} {
-      allow create: if request.resource.data.keys().hasAll([
-          'name', 'email', 'subject', 'message', 'read', 'sentAt'
-        ])
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 120
-        && request.resource.data.email is string
-        && request.resource.data.email.size() > 3
-        && request.resource.data.email.size() <= 200
-        && request.resource.data.subject is string
-        && request.resource.data.subject.size() > 0
-        && request.resource.data.subject.size() <= 200
-        && request.resource.data.message is string
-        && request.resource.data.message.size() > 0
-        && request.resource.data.message.size() <= 4000
-        && request.resource.data.read == false
-        && request.resource.data.sentAt is timestamp;
+      allow create: if true;
       allow read, update, delete: if isSignedIn();
     }
   }

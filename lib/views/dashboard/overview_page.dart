@@ -6,6 +6,7 @@ import 'package:flutter_portfolio/controllers/skill_controller.dart';
 import 'package:flutter_portfolio/controllers/stats_controller.dart';
 import 'package:flutter_portfolio/utils/pick_local_image.dart';
 import 'package:flutter_portfolio/utils/remote_image.dart';
+import 'package:flutter_portfolio/views/portfolio/portfolio_widgets.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
@@ -385,19 +386,10 @@ class _ProfilePhotoCard extends StatelessWidget {
                     : url.isNotEmpty
                         ? RemoteImage(
                             url: url,
-                            placeholder: (_) => Image.asset(
-                              'assets/profile_picture.jpeg',
-                              fit: BoxFit.cover,
-                            ),
-                            error: (_) => Image.asset(
-                              'assets/profile_picture.jpeg',
-                              fit: BoxFit.cover,
-                            ),
+                            placeholder: (_) => const PortraitFallback(onDark: true),
+                            error: (_) => const PortraitFallback(onDark: true),
                           )
-                        : Image.asset(
-                            'assets/profile_picture.jpeg',
-                            fit: BoxFit.cover,
-                          ),
+                        : const PortraitFallback(onDark: true),
               ),
             ),
             const SizedBox(width: 18),

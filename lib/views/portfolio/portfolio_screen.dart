@@ -247,7 +247,7 @@ class _Footer extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  '© ${DateTime.now().year}  ·  Flutter web, not a template.',
+                  '© ${DateTime.now().year}  ·  Motasim Fuad',
                   style: GoogleFonts.ibmPlexMono(
                     color: AppColors.bg.withOpacity(0.55),
                     fontSize: 11,
