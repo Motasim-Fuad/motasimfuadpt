@@ -271,14 +271,14 @@ class StatsSection extends StatelessWidget {
               StatsModel(
                 projectsCompleted: 25,
                 yearsExperience: 3,
-                happyClients: 15,
+                deliveryOnTime: 96,
                 githubStars: 120,
               );
 
           final items = [
             _StatItem('${stats.projectsCompleted}+', 'Projects shipped', Icons.circle, AppColors.ink),
             _StatItem('${stats.yearsExperience}+', 'Years building', Icons.circle, AppColors.ink),
-            _StatItem('${stats.happyClients}+', 'Clients', Icons.circle, AppColors.ink),
+            _StatItem('${stats.deliveryOnTime}%', 'Delivery On Time', Icons.circle, AppColors.ink),
           ];
 
           return Column(

@@ -65,9 +65,9 @@ class _StatsGrid extends StatelessWidget {
         color: AppColors.purple,
       ),
       _StatPreview(
-        value: '${stats.happyClients}+',
-        label: 'Happy Clients',
-        icon: Icons.sentiment_satisfied_rounded,
+        value: '${stats.deliveryOnTime}%',
+        label: 'Delivery On Time',
+        icon: Icons.schedule_send_rounded,
         color: AppColors.green,
       ),
     ];
@@ -186,8 +186,8 @@ class _EditStatsCardState extends State<_EditStatsCard> {
       text: widget.stats.projectsCompleted.toString());
   late final _yearsCtrl = TextEditingController(
       text: widget.stats.yearsExperience.toString());
-  late final _clientsCtrl = TextEditingController(
-      text: widget.stats.happyClients.toString());
+  late final _deliveryCtrl = TextEditingController(
+      text: widget.stats.deliveryOnTime.toString());
 
   bool _loading = false;
   bool _saved = false;
@@ -197,10 +197,10 @@ class _EditStatsCardState extends State<_EditStatsCard> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.stats.projectsCompleted != widget.stats.projectsCompleted ||
         oldWidget.stats.yearsExperience != widget.stats.yearsExperience ||
-        oldWidget.stats.happyClients != widget.stats.happyClients) {
+        oldWidget.stats.deliveryOnTime != widget.stats.deliveryOnTime) {
       _projectsCtrl.text = widget.stats.projectsCompleted.toString();
       _yearsCtrl.text = widget.stats.yearsExperience.toString();
-      _clientsCtrl.text = widget.stats.happyClients.toString();
+      _deliveryCtrl.text = widget.stats.deliveryOnTime.toString();
     }
   }
 
@@ -208,16 +208,16 @@ class _EditStatsCardState extends State<_EditStatsCard> {
   void dispose() {
     _projectsCtrl.dispose();
     _yearsCtrl.dispose();
-    _clientsCtrl.dispose();
+    _deliveryCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     final projects = int.tryParse(_projectsCtrl.text);
     final years = int.tryParse(_yearsCtrl.text);
-    final clients = int.tryParse(_clientsCtrl.text);
+    final delivery = int.tryParse(_deliveryCtrl.text);
 
-    if ([projects, years, clients].any((v) => v == null)) {
+    if ([projects, years, delivery].any((v) => v == null)) {
       Get.snackbar(
         'Error',
         'All fields must be valid numbers',
@@ -232,7 +232,7 @@ class _EditStatsCardState extends State<_EditStatsCard> {
     await StatsController.to.updateStats(StatsModel(
       projectsCompleted: projects!,
       yearsExperience: years!,
-      happyClients: clients!,
+      deliveryOnTime: delivery!.clamp(0, 100).toInt(),
       githubStars: widget.stats.githubStars,
     ));
     setState(() {
@@ -306,9 +306,9 @@ class _EditStatsCardState extends State<_EditStatsCard> {
             children: [
               Expanded(
                 child: _numField(
-                  'Happy Clients',
-                  _clientsCtrl,
-                  Icons.sentiment_satisfied_rounded,
+                  'Delivery On Time (%)',
+                  _deliveryCtrl,
+                  Icons.schedule_send_rounded,
                   AppColors.green,
                 ),
               ),

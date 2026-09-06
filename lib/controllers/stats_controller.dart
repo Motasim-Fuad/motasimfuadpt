@@ -9,7 +9,7 @@ class StatsController extends GetxController {
   final stats = StatsModel(
     projectsCompleted: 25,
     yearsExperience: 3,
-    happyClients: 15,
+    deliveryOnTime: 96,
     githubStars: 120,
   ).obs;
   final dashCounts = <String, int>{}.obs;

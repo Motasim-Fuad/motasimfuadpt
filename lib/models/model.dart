@@ -215,13 +215,13 @@ class ContactModel {
 class StatsModel {
   final int projectsCompleted;
   final int yearsExperience;
-  final int happyClients;
+  final int deliveryOnTime;
   final int githubStars;
 
   StatsModel({
     this.projectsCompleted = 0,
     this.yearsExperience = 0,
-    this.happyClients = 0,
+    this.deliveryOnTime = 96,
     this.githubStars = 0,
   });
 
@@ -230,7 +230,7 @@ class StatsModel {
     return StatsModel(
       projectsCompleted: data['projectsCompleted'] ?? 0,
       yearsExperience: data['yearsExperience'] ?? 0,
-      happyClients: data['happyClients'] ?? 0,
+      deliveryOnTime: data['deliveryOnTime'] ?? 96,
       githubStars: data['githubStars'] ?? 0,
     );
   }
@@ -238,7 +238,7 @@ class StatsModel {
   Map<String, dynamic> toFirestore() => {
     'projectsCompleted': projectsCompleted,
     'yearsExperience': yearsExperience,
-    'happyClients': happyClients,
+    'deliveryOnTime': deliveryOnTime,
     'githubStars': githubStars,
   };
 }
