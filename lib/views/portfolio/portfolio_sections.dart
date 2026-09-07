@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_portfolio/data/site_config.dart';
 import 'package:flutter_portfolio/services/firebase_services.dart';
 import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:flutter_portfolio/utils/motion.dart';
 import 'package:flutter_portfolio/utils/open_link.dart';
 import 'package:flutter_portfolio/utils/responsive.dart';
 import 'package:flutter_portfolio/views/portfolio/portfolio_widgets.dart';
@@ -29,14 +29,19 @@ class AboutSection extends StatelessWidget {
               alignStart: true,
             ),
             const SizedBox(height: 20),
-            Text(
-              SiteConfig.aboutNote,
-              style: Theme.of(context).textTheme.bodyMedium,
+            MotionReveal(
+              delay: const Duration(milliseconds: 80),
+              child: Text(
+                SiteConfig.aboutNote,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             ),
             const SizedBox(height: 48),
             ...SiteConfig.experience.asMap().entries.map((e) {
               final job = e.value;
-              return Padding(
+              return MotionReveal(
+                delay: Duration(milliseconds: 80 + e.key * 90),
+                child: Padding(
                 padding: const EdgeInsets.only(bottom: 28),
                 child: isMobile
                     ? Column(
@@ -54,7 +59,8 @@ class AboutSection extends StatelessWidget {
                           Expanded(child: _JobBody(job: job)),
                         ],
                       ),
-              ).animate(delay: (e.key * 80).ms).fadeIn(duration: 400.ms);
+              ),
+              );
             }),
           ],
         ),
@@ -229,7 +235,9 @@ class SkillsSection extends StatelessWidget {
               : (MediaQuery.of(context).size.width > 1200
                   ? 500
                   : (MediaQuery.of(context).size.width - 96 - 16) / 2),
-          child: GlowCard(
+          child: MotionReveal(
+            delay: Duration(milliseconds: entry.key * 100),
+            child: GlowCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -248,7 +256,8 @@ class SkillsSection extends StatelessWidget {
                     ),
               ],
             ),
-          ).animate(delay: (entry.key * 100).ms).fadeIn(duration: 400.ms),
+          ),
+          ),
         );
       }).toList(),
     );
@@ -284,7 +293,7 @@ class StatsSection extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Divider(color: AppColors.ink, thickness: 1),
+              const MotionLine(color: AppColors.ink),
               const SizedBox(height: 28),
               GridView.builder(
                 shrinkWrap: true,
@@ -305,7 +314,10 @@ class StatsSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              const Divider(color: AppColors.ink, thickness: 1),
+              const MotionLine(
+                color: AppColors.ink,
+                delay: Duration(milliseconds: 120),
+              ),
             ],
           );
         },
@@ -451,9 +463,14 @@ class _ContactSectionState extends State<ContactSection> {
           isMobile
               ? Column(
                   children: [
-                    _ContactInfo(),
+                    MotionReveal(
+                      slide: MotionSlide.left,
+                      child: _ContactInfo(),
+                    ),
                     const SizedBox(height: 20),
-                    _ContactForm(
+                    MotionReveal(
+                      delay: const Duration(milliseconds: 100),
+                      child: _ContactForm(
                       formKey: _formKey,
                       controllers: [_nameCtrl, _emailCtrl, _subjectCtrl, _msgCtrl],
                       sending: _sending,
@@ -461,22 +478,33 @@ class _ContactSectionState extends State<ContactSection> {
                       failed: _failed,
                       onSend: _send,
                     ),
+                    ),
                   ],
                 )
               : Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 4, child: _ContactInfo()),
+                    Expanded(
+                      flex: 4,
+                      child: MotionReveal(
+                        slide: MotionSlide.left,
+                        child: _ContactInfo(),
+                      ),
+                    ),
                     const SizedBox(width: 28),
                     Expanded(
                       flex: 6,
-                      child: _ContactForm(
+                      child: MotionReveal(
+                        delay: const Duration(milliseconds: 90),
+                        slide: MotionSlide.right,
+                        child: _ContactForm(
                         formKey: _formKey,
                         controllers: [_nameCtrl, _emailCtrl, _subjectCtrl, _msgCtrl],
                         sending: _sending,
                         sent: _sent,
                         failed: _failed,
                         onSend: _send,
+                      ),
                       ),
                     ),
                   ],
@@ -578,16 +606,23 @@ class _ContactForm extends StatelessWidget {
         key: formKey,
         child: Column(
           children: [
-            if (sent)
-              _Banner(
-                color: AppColors.green,
-                text: 'Sent. I will reply from my inbox.',
-              ),
-            if (failed)
-              const _Banner(
-                color: AppColors.rust,
-                text: 'Could not send. Email me directly instead.',
-              ),
+            AnimatedSwitcher(
+              duration: Motion.fast,
+              switchInCurve: Motion.ease,
+              child: sent
+                  ? const _Banner(
+                      key: ValueKey('sent'),
+                      color: AppColors.green,
+                      text: 'Sent. I will reply from my inbox.',
+                    )
+                  : failed
+                      ? const _Banner(
+                          key: ValueKey('fail'),
+                          color: AppColors.rust,
+                          text: 'Could not send. Email me directly instead.',
+                        )
+                      : const SizedBox.shrink(key: ValueKey('none')),
+            ),
             Row(
               children: [
                 Expanded(child: _field('Name', controllers[0])),
@@ -653,7 +688,7 @@ class _ContactForm extends StatelessWidget {
 class _Banner extends StatelessWidget {
   final Color color;
   final String text;
-  const _Banner({required this.color, required this.text});
+  const _Banner({super.key, required this.color, required this.text});
 
   @override
   Widget build(BuildContext context) {

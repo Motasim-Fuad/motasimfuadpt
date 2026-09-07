@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_portfolio/data/site_config.dart';
 import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:flutter_portfolio/utils/motion.dart';
 import 'package:flutter_portfolio/utils/open_link.dart';
 import 'package:flutter_portfolio/utils/remote_image.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -50,37 +50,41 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final align = alignStart ? CrossAxisAlignment.start : CrossAxisAlignment.center;
     final textAlign = alignStart ? TextAlign.start : TextAlign.center;
-    return Column(
-      crossAxisAlignment: align,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.ibmPlexMono(
-            color: AppColors.rust,
-            fontSize: 12,
-            letterSpacing: 2.2,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          title,
-          textAlign: textAlign,
-          style: Theme.of(context).textTheme.displaySmall,
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 12),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 560),
-            child: Text(
-              subtitle!,
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: textAlign,
+    return MotionReveal(
+      child: Column(
+        crossAxisAlignment: align,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.ibmPlexMono(
+              color: AppColors.rust,
+              fontSize: 12,
+              letterSpacing: 2.2,
+              fontWeight: FontWeight.w500,
             ),
           ),
+          const SizedBox(height: 10),
+          const MotionLine(color: AppColors.rust, width: 28),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            textAlign: textAlign,
+            style: Theme.of(context).textTheme.displaySmall,
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Text(
+                subtitle!,
+                style: Theme.of(context).textTheme.bodyLarge,
+                textAlign: textAlign,
+              ),
+            ),
+          ],
         ],
-      ],
-    ).animate().fadeIn(duration: 500.ms);
+      ),
+    );
   }
 }
 
@@ -128,111 +132,126 @@ class _ProjectCardState extends State<ProjectCard> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        decoration: BoxDecoration(
-          color: _hovered ? AppColors.cardHover : AppColors.card,
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ColoredBox(
-              color: AppColors.surface,
-              child: SizedBox(
-                height: 196,
-                width: double.infinity,
-                child: widget.project.imageUrl.isNotEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: RemoteImage(
-                          url: widget.project.imageUrl,
-                          fit: BoxFit.contain,
-                          placeholder: (_) => _IndexPlate(index: widget.index),
-                          error: (_) => _IndexPlate(index: widget.index),
-                        ),
-                      )
-                    : _IndexPlate(index: widget.index),
-              ),
+    return MotionReveal(
+      delay: Duration(milliseconds: widget.index * 80),
+      child: MotionHover(
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _hovered = true),
+          onExit: (_) => setState(() => _hovered = false),
+          child: AnimatedContainer(
+            duration: Motion.fast,
+            curve: Motion.ease,
+            decoration: BoxDecoration(
+              color: _hovered ? AppColors.cardHover : AppColors.card,
+              border: Border.all(color: AppColors.border),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (widget.project.featured)
-                    Text(
-                      'SELECTED',
-                      style: GoogleFonts.ibmPlexMono(
-                        color: AppColors.rust,
-                        fontSize: 10,
-                        letterSpacing: 1.6,
-                        fontWeight: FontWeight.w600,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ColoredBox(
+                  color: AppColors.surface,
+                  child: ClipRect(
+                    child: AnimatedScale(
+                      scale: _hovered ? 1.03 : 1,
+                      duration: const Duration(milliseconds: 420),
+                      curve: Motion.ease,
+                      child: SizedBox(
+                        height: 196,
+                        width: double.infinity,
+                        child: widget.project.imageUrl.isNotEmpty
+                            ? Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: RemoteImage(
+                                  url: widget.project.imageUrl,
+                                  fit: BoxFit.contain,
+                                  placeholder: (_) =>
+                                      _IndexPlate(index: widget.index),
+                                  error: (_) =>
+                                      _IndexPlate(index: widget.index),
+                                ),
+                              )
+                            : _IndexPlate(index: widget.index),
                       ),
                     ),
-                  if (widget.project.featured) const SizedBox(height: 8),
-                  Text(
-                    widget.project.title,
-                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  const SizedBox(height: 8),
-                  _ExpandableDescription(text: widget.project.description),
-                  const SizedBox(height: 14),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: widget.project.technologies
-                        .take(4)
-                        .map(
-                          (tech) => Text(
-                            tech,
-                            style: GoogleFonts.ibmPlexMono(
-                              color: AppColors.forest,
-                              fontSize: 11,
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 14,
-                    runSpacing: 8,
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (widget.project.appStoreUrl.isNotEmpty)
-                        _TextLink(
-                          label: 'App Store',
-                          url: widget.project.appStoreUrl,
-                          rust: true,
+                      if (widget.project.featured)
+                        Text(
+                          'SELECTED',
+                          style: GoogleFonts.ibmPlexMono(
+                            color: AppColors.rust,
+                            fontSize: 10,
+                            letterSpacing: 1.6,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      if (widget.project.playStoreUrl.isNotEmpty)
-                        _TextLink(
-                          label: 'Play Store',
-                          url: widget.project.playStoreUrl,
-                          rust: true,
-                        ),
-                      if (widget.project.githubUrl.isNotEmpty)
-                        _TextLink(
-                          label: 'Code',
-                          url: widget.project.githubUrl,
-                        ),
-                      if (widget.project.liveUrl.isNotEmpty)
-                        _TextLink(
-                          label: 'Live',
-                          url: widget.project.liveUrl,
-                        ),
+                      if (widget.project.featured) const SizedBox(height: 8),
+                      Text(
+                        widget.project.title,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      _ExpandableDescription(text: widget.project.description),
+                      const SizedBox(height: 14),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: widget.project.technologies
+                            .take(4)
+                            .map(
+                              (tech) => Text(
+                                tech,
+                                style: GoogleFonts.ibmPlexMono(
+                                  color: AppColors.forest,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 14,
+                        runSpacing: 8,
+                        children: [
+                          if (widget.project.appStoreUrl.isNotEmpty)
+                            _TextLink(
+                              label: 'App Store',
+                              url: widget.project.appStoreUrl,
+                              rust: true,
+                            ),
+                          if (widget.project.playStoreUrl.isNotEmpty)
+                            _TextLink(
+                              label: 'Play Store',
+                              url: widget.project.playStoreUrl,
+                              rust: true,
+                            ),
+                          if (widget.project.githubUrl.isNotEmpty)
+                            _TextLink(
+                              label: 'Code',
+                              url: widget.project.githubUrl,
+                            ),
+                          if (widget.project.liveUrl.isNotEmpty)
+                            _TextLink(
+                              label: 'Live',
+                              url: widget.project.liveUrl,
+                            ),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
-    ).animate(delay: (widget.index * 80).ms).fadeIn(duration: 450.ms);
+    );
   }
 }
 
@@ -263,11 +282,16 @@ class _ExpandableDescriptionState extends State<_ExpandableDescription> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.text,
-              maxLines: _expanded ? null : 3,
-              overflow: _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
-              style: style,
+            AnimatedSize(
+              duration: Motion.fast,
+              curve: Motion.ease,
+              alignment: Alignment.topLeft,
+              child: Text(
+                widget.text,
+                maxLines: _expanded ? null : 3,
+                overflow: _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                style: style,
+              ),
             ),
             if (overflows) ...[
               const SizedBox(height: 6),
@@ -373,7 +397,7 @@ class SkillBar extends StatelessWidget {
           ),
         ],
       ),
-    ).animate(delay: (index * 40).ms).fadeIn(duration: 350.ms);
+    );
   }
 }
 
@@ -392,75 +416,85 @@ class _BlogCardState extends State<BlogCard> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTap: () => Get.toNamed('/notes/${widget.blog.id}'),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            color: _hovered ? AppColors.cardHover : AppColors.card,
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.blog.tags.take(2).map((t) => t.toUpperCase()).join('  ·  '),
-                style: GoogleFonts.ibmPlexMono(
-                  color: AppColors.rust,
-                  fontSize: 10,
-                  letterSpacing: 1.4,
-                ),
+    return MotionReveal(
+      delay: Duration(milliseconds: widget.index * 80),
+      child: MotionHover(
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          onEnter: (_) => setState(() => _hovered = true),
+          onExit: (_) => setState(() => _hovered = false),
+          child: GestureDetector(
+            onTap: () => Get.toNamed('/notes/${widget.blog.id}'),
+            child: AnimatedContainer(
+              duration: Motion.fast,
+              curve: Motion.ease,
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: _hovered ? AppColors.cardHover : AppColors.card,
+                border: Border.all(color: AppColors.border),
               ),
-              const SizedBox(height: 14),
-              Text(
-                widget.blog.title,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(height: 1.25),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                widget.blog.excerpt,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const Spacer(),
-              const SizedBox(height: 16),
-              Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${widget.blog.readTimeMinutes} min',
+                    widget.blog.tags.take(2).map((t) => t.toUpperCase()).join('  ·  '),
                     style: GoogleFonts.ibmPlexMono(
-                      color: AppColors.textMuted,
-                      fontSize: 11,
+                      color: AppColors.rust,
+                      fontSize: 10,
+                      letterSpacing: 1.4,
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 14),
                   Text(
-                    _hovered ? 'Read →' : 'Read',
-                    style: GoogleFonts.outfit(
-                      color: AppColors.rust,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
+                    widget.blog.title,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(height: 1.25),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    widget.blog.excerpt,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const Spacer(),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Text(
+                        '${widget.blog.readTimeMinutes} min',
+                        style: GoogleFonts.ibmPlexMono(
+                          color: AppColors.textMuted,
+                          fontSize: 11,
+                        ),
+                      ),
+                      const Spacer(),
+                      AnimatedSwitcher(
+                        duration: Motion.fast,
+                        child: Text(
+                          _hovered ? 'Read →' : 'Read',
+                          key: ValueKey(_hovered),
+                          style: GoogleFonts.outfit(
+                            color: AppColors.rust,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
-    ).animate(delay: (widget.index * 80).ms).fadeIn(duration: 450.ms);
+    );
   }
 }
 
-class StatCard extends StatelessWidget {
+class StatCard extends StatefulWidget {
   final String value;
   final String label;
   final IconData icon;
@@ -477,31 +511,45 @@ class StatCard extends StatelessWidget {
   });
 
   @override
+  State<StatCard> createState() => _StatCardState();
+}
+
+class _StatCardState extends State<StatCard> {
+  bool _play = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            value,
-            style: GoogleFonts.fraunces(
-              fontSize: 36,
-              fontWeight: FontWeight.w600,
-              color: AppColors.ink,
+    return MotionReveal(
+      delay: Duration(milliseconds: widget.index * 90),
+      onVisible: () {
+        if (mounted) setState(() => _play = true);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            MotionCount(
+              value: widget.value,
+              play: _play,
+              style: GoogleFonts.fraunces(
+                fontSize: 36,
+                fontWeight: FontWeight.w600,
+                color: AppColors.ink,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.outfit(
-              color: AppColors.textSecondary,
-              fontSize: 13,
+            const SizedBox(height: 4),
+            Text(
+              widget.label,
+              style: GoogleFonts.outfit(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ).animate(delay: (index * 70).ms).fadeIn(duration: 400.ms);
+    );
   }
 }
 
@@ -571,10 +619,12 @@ class _SocialIconState extends State<_SocialIcon> {
       child: WebLink(
         url: widget.url,
         child: MouseRegion(
+          cursor: SystemMouseCursors.click,
           onEnter: (_) => setState(() => _hover = true),
           onExit: (_) => setState(() => _hover = false),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
+            duration: Motion.fast,
+            curve: Motion.ease,
             width: 42,
             height: 42,
             decoration: BoxDecoration(

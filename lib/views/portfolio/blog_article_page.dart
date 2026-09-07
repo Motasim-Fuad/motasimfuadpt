@@ -4,6 +4,7 @@ import 'package:flutter_portfolio/controllers/blog_controller.dart';
 import 'package:flutter_portfolio/data/site_config.dart';
 import 'package:flutter_portfolio/models/model.dart';
 import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:flutter_portfolio/utils/motion.dart';
 import 'package:flutter_portfolio/utils/open_link.dart';
 import 'package:flutter_portfolio/utils/responsive.dart';
 import 'package:get/get.dart';
@@ -70,30 +71,43 @@ class BlogArticlePage extends StatelessWidget {
           child: ListView(
             padding: EdgeInsets.fromLTRB(isMobile ? 24 : 32, 24, isMobile ? 24 : 32, 80),
             children: [
-              Text(
-                blog.tags.map((t) => t.toUpperCase()).join('  ·  '),
-                style: GoogleFonts.ibmPlexMono(
-                  color: AppColors.rust,
-                  fontSize: 11,
-                  letterSpacing: 1.6,
+              MotionReveal(
+                child: Text(
+                  blog.tags.map((t) => t.toUpperCase()).join('  ·  '),
+                  style: GoogleFonts.ibmPlexMono(
+                    color: AppColors.rust,
+                    fontSize: 11,
+                    letterSpacing: 1.6,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
-              Text(blog.title, style: Theme.of(context).textTheme.displaySmall),
+              MotionReveal(
+                delay: const Duration(milliseconds: 70),
+                child: Text(blog.title, style: Theme.of(context).textTheme.displaySmall),
+              ),
               const SizedBox(height: 16),
-              Text(
-                '${DateFormat('d MMM yyyy').format(blog.publishedAt)}  ·  ${blog.readTimeMinutes} min  ·  ${SiteConfig.shortName}',
-                style: GoogleFonts.ibmPlexMono(color: AppColors.textMuted, fontSize: 12),
+              MotionReveal(
+                delay: const Duration(milliseconds: 120),
+                child: Text(
+                  '${DateFormat('d MMM yyyy').format(blog.publishedAt)}  ·  ${blog.readTimeMinutes} min  ·  ${SiteConfig.shortName}',
+                  style: GoogleFonts.ibmPlexMono(color: AppColors.textMuted, fontSize: 12),
+                ),
               ),
               const SizedBox(height: 28),
-              Text(
-                blog.excerpt,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.ink),
+              MotionReveal(
+                delay: const Duration(milliseconds: 170),
+                child: Text(
+                  blog.excerpt,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.ink),
+                ),
               ),
               const SizedBox(height: 28),
               const Divider(color: AppColors.border),
               const SizedBox(height: 28),
-              MarkdownBody(
+              MotionReveal(
+                delay: const Duration(milliseconds: 220),
+                child: MarkdownBody(
                 data: blog.content,
                 selectable: true,
                 onTapLink: (text, href, title) {
@@ -121,10 +135,14 @@ class BlogArticlePage extends StatelessWidget {
                   ),
                 ),
               ),
+              ),
               const SizedBox(height: 48),
-              OutlinedButton(
-                onPressed: () => Get.offAllNamed('/'),
-                child: const Text('Back to the site'),
+              MotionReveal(
+                delay: const Duration(milliseconds: 280),
+                child: OutlinedButton(
+                  onPressed: () => Get.offAllNamed('/'),
+                  child: const Text('Back to the site'),
+                ),
               ),
             ],
           ),

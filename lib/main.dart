@@ -7,6 +7,7 @@ import 'package:flutter_portfolio/theme/app_theme.dart';
 import 'package:flutter_portfolio/views/dashboard/dashboard_guard.dart';
 import 'package:flutter_portfolio/views/dashboard/login_screen.dart';
 import 'package:flutter_portfolio/views/portfolio/blog_article_page.dart';
+import 'package:flutter_portfolio/utils/motion.dart';
 import 'package:flutter_portfolio/views/portfolio/portfolio_screen.dart';
 import 'package:get/get.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -39,6 +40,9 @@ class PortfolioApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       initialBinding: AppBinding(),
+      defaultTransition: Transition.fadeIn,
+      customTransition: AppPageTransition(),
+      transitionDuration: Motion.page,
       initialRoute: '/',
       getPages: [
         GetPage(name: '/', page: () => const PortfolioScreen()),
