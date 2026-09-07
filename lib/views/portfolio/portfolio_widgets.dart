@@ -341,7 +341,7 @@ class _IndexPlate extends StatelessWidget {
   }
 }
 
-class _TextLink extends StatelessWidget {
+class _TextLink extends StatefulWidget {
   final String label;
   final String url;
   final bool rust;
@@ -349,17 +349,33 @@ class _TextLink extends StatelessWidget {
   const _TextLink({required this.label, required this.url, this.rust = false});
 
   @override
+  State<_TextLink> createState() => _TextLinkState();
+}
+
+class _TextLinkState extends State<_TextLink> {
+  bool _hover = false;
+
+  @override
   Widget build(BuildContext context) {
+    final color = widget.rust ? AppColors.rust : AppColors.ink;
     return WebLink(
-      url: url,
-      child: Text(
-        label,
-        style: GoogleFonts.outfit(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: rust ? AppColors.rust : AppColors.ink,
-          decoration: TextDecoration.underline,
-          decorationColor: rust ? AppColors.rust : AppColors.ink,
+      url: widget.url,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hover = true),
+        onExit: (_) => setState(() => _hover = false),
+        child: AnimatedDefaultTextStyle(
+          duration: Motion.fast,
+          curve: Motion.ease,
+          style: GoogleFonts.outfit(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: color,
+            decoration: TextDecoration.underline,
+            decorationColor: color.withValues(alpha: _hover ? 1 : 0.45),
+            decorationThickness: _hover ? 1.4 : 1,
+          ),
+          child: Text(widget.label),
         ),
       ),
     );

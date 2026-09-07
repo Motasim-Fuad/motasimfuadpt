@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_portfolio/theme/app_theme.dart';
+import 'package:flutter_portfolio/utils/motion.dart';
 
 /// Turns share/view links into a URL a browser `<img>` can actually load.
 String resolveImageUrl(String raw) {
@@ -66,13 +67,16 @@ class RemoteImage extends StatelessWidget {
       if (at < 0) return error(context);
       try {
         final bytes = base64Decode(resolved.substring(at + marker.length));
-        return Image.memory(
-          bytes,
-          fit: fit,
-          width: double.infinity,
-          height: double.infinity,
-          gaplessPlayback: true,
-          errorBuilder: (context, _, __) => error(context),
+        return _FadeInImage(
+          key: ValueKey(resolved),
+          child: Image.memory(
+            bytes,
+            fit: fit,
+            width: double.infinity,
+            height: double.infinity,
+            gaplessPlayback: true,
+            errorBuilder: (context, _, __) => error(context),
+          ),
         );
       } catch (_) {
         return error(context);
@@ -89,10 +93,43 @@ class RemoteImage extends StatelessWidget {
           ? WebHtmlElementStrategy.prefer
           : WebHtmlElementStrategy.never,
       loadingBuilder: (context, child, progress) {
-        if (progress == null) return child;
+        if (progress == null) {
+          return _FadeInImage(key: ValueKey(resolved), child: child);
+        }
         return placeholder(context);
       },
       errorBuilder: (context, _, __) => error(context),
+    );
+  }
+}
+
+class _FadeInImage extends StatefulWidget {
+  final Widget child;
+  const _FadeInImage({super.key, required this.child});
+
+  @override
+  State<_FadeInImage> createState() => _FadeInImageState();
+}
+
+class _FadeInImageState extends State<_FadeInImage> {
+  bool _shown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _shown = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (MediaQuery.disableAnimationsOf(context)) return widget.child;
+    return AnimatedOpacity(
+      opacity: _shown ? 1 : 0,
+      duration: const Duration(milliseconds: 480),
+      curve: Motion.ease,
+      child: widget.child,
     );
   }
 }

@@ -645,16 +645,21 @@ class _ContactForm extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: sending ? null : onSend,
-                child: sending
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          color: Color(0xFFFFF8F0),
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text('Send'),
+                child: AnimatedSwitcher(
+                  duration: Motion.fast,
+                  switchInCurve: Motion.ease,
+                  child: sending
+                      ? const SizedBox(
+                          key: ValueKey('spin'),
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            color: Color(0xFFFFF8F0),
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Send', key: ValueKey('label')),
+                ),
               ),
             ),
           ],

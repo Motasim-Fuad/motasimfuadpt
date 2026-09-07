@@ -43,6 +43,7 @@ class PortfolioApp extends StatelessWidget {
       defaultTransition: Transition.fadeIn,
       customTransition: AppPageTransition(),
       transitionDuration: Motion.page,
+      scrollBehavior: AppScrollBehavior(),
       initialRoute: '/',
       getPages: [
         GetPage(name: '/', page: () => const PortfolioScreen()),

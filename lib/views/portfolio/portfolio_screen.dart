@@ -173,6 +173,28 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
                   children: [
+                    AnimatedOpacity(
+                      opacity: showBg ? 1 : 0,
+                      duration: Motion.fast,
+                      curve: Motion.ease,
+                      child: IgnorePointer(
+                        ignoring: !showBg,
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () => onTap(0),
+                            child: Text(
+                              SiteConfig.shortName,
+                              style: GoogleFonts.fraunces(
+                                color: AppColors.ink,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     const Spacer(),
                     if (!isMobile)
                       Row(
