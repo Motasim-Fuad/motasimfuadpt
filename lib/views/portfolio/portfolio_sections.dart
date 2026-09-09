@@ -643,7 +643,8 @@ class _ContactForm extends StatelessWidget {
             const SizedBox(height: 22),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: SelectionContainer.disabled(
+                child: ElevatedButton(
                 onPressed: sending ? null : onSend,
                 child: AnimatedSwitcher(
                   duration: Motion.fast,
@@ -660,6 +661,7 @@ class _ContactForm extends StatelessWidget {
                         )
                       : const Text('Send', key: ValueKey('label')),
                 ),
+              ),
               ),
             ),
           ],

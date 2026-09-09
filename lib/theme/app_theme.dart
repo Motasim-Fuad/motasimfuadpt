@@ -117,6 +117,11 @@ class AppTheme {
         onSurface: AppColors.ink,
       ),
       textTheme: _textTheme(AppColors.ink, AppColors.textSecondary),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: AppColors.rust,
+        selectionColor: AppColors.rust.withValues(alpha: 0.22),
+        selectionHandleColor: AppColors.rust,
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.rust,
@@ -205,6 +210,11 @@ class AppTheme {
         onSurface: AppColors.dashText,
       ),
       textTheme: _textTheme(AppColors.dashText, AppColors.dashMuted),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: AppColors.rust,
+        selectionColor: AppColors.rust.withValues(alpha: 0.28),
+        selectionHandleColor: AppColors.rust,
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.rust,

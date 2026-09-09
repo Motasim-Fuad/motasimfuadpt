@@ -299,7 +299,8 @@ class _ExpandableDescriptionState extends State<_ExpandableDescription> {
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
                   onTap: () => setState(() => _expanded = !_expanded),
-                  child: Text(
+                  child: SelectionContainer.disabled(
+                    child: Text(
                     _expanded ? 'See less' : 'See more',
                     style: GoogleFonts.outfit(
                       fontSize: 13,
@@ -308,6 +309,7 @@ class _ExpandableDescriptionState extends State<_ExpandableDescription> {
                       decoration: TextDecoration.underline,
                       decorationColor: AppColors.rust,
                     ),
+                  ),
                   ),
                 ),
               ),
@@ -436,12 +438,9 @@ class _BlogCardState extends State<BlogCard> {
       delay: Duration(milliseconds: widget.index * 80),
       child: MotionHover(
         child: MouseRegion(
-          cursor: SystemMouseCursors.click,
           onEnter: (_) => setState(() => _hovered = true),
           onExit: (_) => setState(() => _hovered = false),
-          child: GestureDetector(
-            onTap: () => Get.toNamed('/notes/${widget.blog.id}'),
-            child: AnimatedContainer(
+          child: AnimatedContainer(
               duration: Motion.fast,
               curve: Motion.ease,
               padding: const EdgeInsets.all(22),
@@ -486,15 +485,23 @@ class _BlogCardState extends State<BlogCard> {
                         ),
                       ),
                       const Spacer(),
-                      AnimatedSwitcher(
-                        duration: Motion.fast,
-                        child: Text(
-                          _hovered ? 'Read →' : 'Read',
-                          key: ValueKey(_hovered),
-                          style: GoogleFonts.outfit(
-                            color: AppColors.rust,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
+                      SelectionContainer.disabled(
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () => Get.toNamed('/notes/${widget.blog.id}'),
+                            child: AnimatedSwitcher(
+                              duration: Motion.fast,
+                              child: Text(
+                                _hovered ? 'Read →' : 'Read',
+                                key: ValueKey(_hovered),
+                                style: GoogleFonts.outfit(
+                                  color: AppColors.rust,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -503,7 +510,6 @@ class _BlogCardState extends State<BlogCard> {
                 ],
               ),
             ),
-          ),
         ),
       ),
     );
@@ -630,7 +636,8 @@ class _SocialIconState extends State<_SocialIcon> {
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
+    return SelectionContainer.disabled(
+      child: Tooltip(
       message: widget.tooltip,
       child: WebLink(
         url: widget.url,
@@ -663,6 +670,7 @@ class _SocialIconState extends State<_SocialIcon> {
           ),
         ),
       ),
+    ),
     );
   }
 }

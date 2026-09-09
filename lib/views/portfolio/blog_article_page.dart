@@ -139,9 +139,11 @@ class BlogArticlePage extends StatelessWidget {
               const SizedBox(height: 48),
               MotionReveal(
                 delay: const Duration(milliseconds: 280),
-                child: OutlinedButton(
-                  onPressed: () => Get.offAllNamed('/'),
-                  child: const Text('Back to the site'),
+                child: SelectionContainer.disabled(
+                  child: OutlinedButton(
+                    onPressed: () => Get.offAllNamed('/'),
+                    child: const Text('Back to the site'),
+                  ),
                 ),
               ),
             ],

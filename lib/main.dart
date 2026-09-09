@@ -44,6 +44,14 @@ class PortfolioApp extends StatelessWidget {
       customTransition: AppPageTransition(),
       transitionDuration: Motion.page,
       scrollBehavior: AppScrollBehavior(),
+      builder: (context, child) {
+        return DefaultSelectionStyle(
+          selectionColor: AppColors.rust.withValues(alpha: 0.22),
+          child: SelectionArea(
+            child: child ?? const SizedBox.shrink(),
+          ),
+        );
+      },
       initialRoute: '/',
       getPages: [
         GetPage(name: '/', page: () => const PortfolioScreen()),

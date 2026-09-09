@@ -147,7 +147,8 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
+    return SelectionContainer.disabled(
+      child: AnimatedContainer(
       duration: Motion.fast,
       decoration: BoxDecoration(
         color: showBg ? AppColors.bg.withOpacity(0.96) : Colors.transparent,
@@ -250,6 +251,7 @@ class _NavBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ],
       ),
+    ),
     );
   }
 

@@ -154,23 +154,27 @@ class _HeroCopy extends StatelessWidget {
             children: [
               MotionHover(
                 lift: 3,
-                child: Link(
-                  uri: parseLaunchUri(SiteConfig.cvUrl),
-                  target: LinkTarget.blank,
-                  builder: (context, followLink) => ElevatedButton(
-                    onPressed: followLink,
-                    child: const Text('Download CV'),
+                child: SelectionContainer.disabled(
+                  child: Link(
+                    uri: parseLaunchUri(SiteConfig.cvUrl),
+                    target: LinkTarget.blank,
+                    builder: (context, followLink) => ElevatedButton(
+                      onPressed: followLink,
+                      child: const Text('Download CV'),
+                    ),
                   ),
                 ),
               ),
               MotionHover(
                 lift: 3,
-                child: Link(
-                  uri: parseLaunchUri(SiteConfig.mailUrl),
-                  target: LinkTarget.blank,
-                  builder: (context, followLink) => OutlinedButton(
-                    onPressed: followLink,
-                    child: const Text('Write to me'),
+                child: SelectionContainer.disabled(
+                  child: Link(
+                    uri: parseLaunchUri(SiteConfig.mailUrl),
+                    target: LinkTarget.blank,
+                    builder: (context, followLink) => OutlinedButton(
+                      onPressed: followLink,
+                      child: const Text('Write to me'),
+                    ),
                   ),
                 ),
               ),
