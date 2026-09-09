@@ -90,7 +90,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
     return MotionHost(
       controller: _scrollController,
-      child: Scaffold(
+      child: SelectionArea(
+        child: Scaffold(
         backgroundColor: AppColors.bg,
         extendBodyBehindAppBar: true,
         appBar: _NavBar(
@@ -120,6 +121,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

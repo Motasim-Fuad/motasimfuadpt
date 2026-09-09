@@ -31,25 +31,28 @@ class BlogArticlePage extends StatelessWidget {
     final isMobile = Responsive.isMobile(context);
 
     if (blog == null) {
-      return Scaffold(
-        backgroundColor: AppColors.bg,
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Note not found', style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => Get.offAllNamed('/'),
-                child: const Text('Back to home'),
-              ),
-            ],
+      return SelectionArea(
+        child: Scaffold(
+          backgroundColor: AppColors.bg,
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Note not found', style: Theme.of(context).textTheme.headlineMedium),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Get.offAllNamed('/'),
+                  child: const Text('Back to home'),
+                ),
+              ],
+            ),
           ),
         ),
       );
     }
 
-    return Scaffold(
+    return SelectionArea(
+      child: Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
         backgroundColor: AppColors.bg,
@@ -149,6 +152,7 @@ class BlogArticlePage extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }
