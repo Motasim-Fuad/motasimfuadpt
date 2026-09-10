@@ -5,7 +5,7 @@ class SiteConfig {
   static const location = 'Dhaka, Bangladesh';
   static const email = 'motasimfuad99@gmail.com';
   static const tagline =
-      'I ship production Flutter apps — architecture first, payments and maps included.';
+      'I ship production Flutter apps architecture first, payments and maps included.';
   static const bio =
       'Application developer for Android and iOS. Day job is Flutter: GetX, MVVM, Firebase, maps, and subscriptions. I can read a FastAPI + Postgres contract, follow Docker Compose, and talk Redis caching without pretending I own the backend.';
   static const aboutNote =
@@ -47,7 +47,7 @@ class SiteConfig {
       period: 'Internship',
       points: [
         'Internship building Flutter screens and shipping location features with Google Maps.',
-        'Client-ready UI, session handling, and day-to-day app reliability.',
+        'Client-ready UI, session handling, and day to day app reliability.',
       ],
     ),
   ];
